@@ -257,6 +257,7 @@
     // --- タイマー制御 ---
     function startTimer() {
       isRunning = true;
+      timerDisplay.textContent = formatTime(0);
       startTime = performance.now() - elapsed;
       timerDisplay.classList.add('running');
       timerBlock.querySelector('#timer-hint').textContent = 'スペースキー / タップ で停止';
@@ -278,7 +279,6 @@
       const finalTime = elapsed;
       addTime(finalTime);
       elapsed = 0;
-      timerDisplay.textContent = formatTime(0);
       updateScramble();
     }
 
