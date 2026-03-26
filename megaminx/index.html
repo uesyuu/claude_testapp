@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Megaminx Visualizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: #12172b;
+      color: #e0e6f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 40px;
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+      color: #a8d8ea;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    #app {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    /* ---- Panel ---- */
+    .panel {
+      background: #1c2340;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    }
+    .panel-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #7aa2c8;
+      margin-bottom: 12px;
+    }
+
+    /* ---- Color palette ---- */
+    #palette-panel { width: 220px; }
+
+    #palette {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .color-btn {
+      height: 52px;
+      border-radius: 10px;
+      border: 3px solid transparent;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+      user-select: none;
+    }
+    .color-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+    }
+    .color-btn.selected {
+      border-color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 0 10px rgba(255,255,255,0.4);
+    }
+
+    /* ---- Buttons ---- */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 9px 0;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: filter 0.15s, transform 0.1s;
+    }
+    .action-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .action-btn:active { transform: translateY(0); }
+
+    #btn-solved { background: #3a7bd5; color: #fff; }
+    #btn-reset  { background: #e04060; color: #fff; }
+    #btn-save   { background: #10a060; color: #fff; }
+
+    .tip {
+      margin-top: 14px;
+      font-size: 0.72rem;
+      color: #6080a0;
+      line-height: 1.6;
+    }
+    .tip span { color: #a8d8ea; }
+
+    /* ---- Canvas panels ---- */
+    canvas {
+      display: block;
+      border-radius: 10px;
+    }
+    #net-canvas    { background: #0d1428; }
+    #preview-canvas { background: #0d1428; }
+  </style>
+</head>
+<body>
+
+<h1>Megaminx Visualizer</h1>
+
+<div id="app">
+
+  <!-- Left: palette + controls -->
+  <div class="panel" id="palette-panel">
+    <div class="panel-title">色を選択</div>
+    <div id="palette"></div>
+
+    <div class="btn-group">
+      <button class="action-btn" id="btn-solved">揃った状態にする</button>
+      <button class="action-btn" id="btn-reset">全消し（グレー）</button>
+      <button class="action-btn" id="btn-save">3D画像をPNG保存</button>
+    </div>
+
+    <p class="tip">
+      <span>① 色を選択</span><br>
+      <span>② 展開図のステッカーをクリック</span><br>
+      → 3Dプレビューにリアルタイム反映
+    </p>
+  </div>
+
+  <!-- Center: net -->
+  <div class="panel">
+    <div class="panel-title">展開図（クリックで色を変更）</div>
+    <canvas id="net-canvas" width="720" height="420"></canvas>
+  </div>
+
+  <!-- Right: 3D preview -->
+  <div class="panel">
+    <div class="panel-title">3Dプレビュー</div>
+    <canvas id="preview-canvas" width="460" height="460"></canvas>
+  </div>
+
+</div>
+
+<script src="megaminx.js"></script>
+</body>
+</html>
