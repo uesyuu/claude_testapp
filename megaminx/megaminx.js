@@ -112,16 +112,30 @@ function buildVF(pts5) {
 }
 
 // ============================================================
-//  3D render (perspective view) — ported directly from Python
+//  Rotation state
+// ============================================================
+const DEFAULT_ROT_H = PI * 0.05;  // horizontal (Z-axis) ≈ 9°
+const DEFAULT_ROT_V = PI * 0.2;   // vertical   (Y-axis) ≈ 36°
+let rotH = DEFAULT_ROT_H;
+let rotV = DEFAULT_ROT_V;
+
+// Apply current rotH then rotV to a 3D vector
+function applyRotation(x, y, z) {
+  [x, y] = [x * Math.cos(rotH) + y * Math.sin(rotH), -x * Math.sin(rotH) + y * Math.cos(rotH)];
+  [x, z] = [x * Math.cos(rotV) + z * Math.sin(rotV), -x * Math.sin(rotV) + z * Math.cos(rotV)];
+  return [x, y, z];
+}
+
+// ============================================================
+//  3D render (perspective view)
 // ============================================================
 function trans3D(x, y, z, size, scale) {
-  let t = PI * 0.05;
-  [x, y] = [x * Math.cos(t) + y * Math.sin(t), -x * Math.sin(t) + y * Math.cos(t)];
-  t = PI * 0.2;
-  [x, z] = [x * Math.cos(t) + z * Math.sin(t), -x * Math.sin(t) + z * Math.cos(t)];
+  const [rx, ry, rz] = applyRotation(x, y, z);
   const persp = 0.1;
-  [x, y] = [y * (1 + x * persp), -z * (1 + x * persp)];
-  return [size / 2 + x * scale, size / 2 + y * scale];
+  return [
+    size / 2 + ry * (1 + rx * persp) * scale,
+    size / 2 - rz * (1 + rx * persp) * scale,
+  ];
 }
 
 function drawPoly(ctx, pts, fill, strokeColor, lineWidth) {
@@ -134,15 +148,37 @@ function drawPoly(ctx, pts, fill, strokeColor, lineWidth) {
   if (strokeColor) { ctx.strokeStyle = strokeColor; ctx.lineWidth = lineWidth; ctx.stroke(); }
 }
 
+// Outward unit normal of face si = normalised face-center vector (convex polyhedron)
+function getFaceNormal(si) {
+  const verts = GEO.S[si].map(p => GEO.V[p]);
+  const fc = verts.reduce((a, v) => [a[0]+v[0], a[1]+v[1], a[2]+v[2]], [0, 0, 0])
+                  .map(x => x / 5);
+  const len = Math.sqrt(fc[0]**2 + fc[1]**2 + fc[2]**2);
+  return [fc[0]/len, fc[1]/len, fc[2]/len];
+}
+
 function render3D(canvas) {
   const size = canvas.width;
   const scale = size * 0.27;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, size, size);
 
-  const VISIBLE_FACES = [0, 2, 3, 4, 7, 11];
+  // Determine visible faces and sort back-to-front (painter's algorithm)
+  const visible = [];
+  for (let si = 0; si < 12; si++) {
+    const n = getFaceNormal(si);
+    const [rnx] = applyRotation(n[0], n[1], n[2]);
+    if (rnx > 0) { // facing camera (+x direction)
+      // depth = x-component of face center after rotation
+      const verts = GEO.S[si].map(p => GEO.V[p]);
+      const fc = verts.reduce((a, v) => [a[0]+v[0], a[1]+v[1], a[2]+v[2]], [0,0,0]).map(x=>x/5);
+      const [depth] = applyRotation(fc[0], fc[1], fc[2]);
+      visible.push({ si, depth });
+    }
+  }
+  visible.sort((a, b) => a.depth - b.depth); // smallest x = furthest → paint first
 
-  for (const si of VISIBLE_FACES) {
+  for (const { si } of visible) {
     const faceVerts3D = GEO.S[si].map(p => GEO.V[p]);
     const VF = buildVF(faceVerts3D);
 
@@ -152,7 +188,6 @@ function render3D(canvas) {
       drawPoly(ctx, pts2D, COLOR_MAP[colorKey] || '#404040', '#000', 1.5);
     });
 
-    // Face outline
     const outline = GEO.S[si].map(p => trans3D(GEO.V[p][0], GEO.V[p][1], GEO.V[p][2], size, scale));
     drawPoly(ctx, outline, null, '#000', 3);
   }
@@ -414,6 +449,34 @@ window.addEventListener('DOMContentLoaded', () => {
     link.download = 'megaminx.png';
     link.href = previewCanvas.toDataURL('image/png');
     link.click();
+  });
+
+  // ---- Rotation sliders ----
+  const sliderRotH = document.getElementById('slider-roth');
+  const sliderRotV = document.getElementById('slider-rotv');
+  const lblRotH    = document.getElementById('lbl-roth');
+  const lblRotV    = document.getElementById('lbl-rotv');
+
+  function updateRotation() {
+    rotH = parseInt(sliderRotH.value) * PI / 180;
+    rotV = parseInt(sliderRotV.value) * PI / 180;
+    lblRotH.textContent = sliderRotH.value;
+    lblRotV.textContent = sliderRotV.value;
+    render3D(previewCanvas);
+  }
+  sliderRotH.addEventListener('input', updateRotation);
+  sliderRotV.addEventListener('input', updateRotation);
+
+  document.getElementById('btn-default-view').addEventListener('click', () => {
+    const dh = Math.round(DEFAULT_ROT_H * 180 / PI);
+    const dv = Math.round(DEFAULT_ROT_V * 180 / PI);
+    sliderRotH.value = dh;
+    sliderRotV.value = dv;
+    lblRotH.textContent = dh;
+    lblRotV.textContent = dv;
+    rotH = DEFAULT_ROT_H;
+    rotV = DEFAULT_ROT_V;
+    render3D(previewCanvas);
   });
 
   // Rebuild net when crossing the mobile/desktop breakpoint

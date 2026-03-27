@@ -27,6 +27,7 @@
       margin-top: 4px;
     }
 
+    /* ---- Mobile: 縦1列 ---- */
     #app {
       display: flex;
       flex-direction: column;
@@ -41,7 +42,6 @@
       border-radius: 14px;
       padding: 14px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.5);
-      width: 100%;
     }
     .panel-title {
       font-size: 0.75rem;
@@ -83,12 +83,13 @@
     /* ---- Buttons ---- */
     .btn-group {
       display: flex;
+      flex-wrap: wrap;
       gap: 8px;
     }
 
     .action-btn {
-      flex: 1;
-      padding: 11px 4px;
+      flex: 1 1 auto;
+      padding: 11px 10px;
       border: none;
       border-radius: 9px;
       font-size: 0.78rem;
@@ -97,12 +98,14 @@
       letter-spacing: 0.3px;
       transition: filter 0.15s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
     }
     .action-btn:active { transform: scale(0.97); }
 
-    #btn-solved { background: #3a7bd5; color: #fff; }
-    #btn-reset  { background: #e04060; color: #fff; }
-    #btn-save   { background: #10a060; color: #fff; }
+    #btn-solved      { background: #3a7bd5; color: #fff; }
+    #btn-reset       { background: #e04060; color: #fff; }
+    #btn-save        { background: #10a060; color: #fff; }
+    #btn-default-view { background: #506070; color: #fff; width: 100%; }
 
     .tip {
       margin-top: 10px;
@@ -112,51 +115,94 @@
     }
     .tip span { color: #a8d8ea; }
 
-    /* ---- Canvas: CSS scaling (内部解像度は固定、表示だけ縮小) ---- */
+    /* ---- Rotation sliders ---- */
+    .rotation-row { margin-bottom: 12px; }
+    .rotation-label {
+      font-size: 0.72rem;
+      color: #a0b8d0;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .rot-val {
+      color: #a8d8ea;
+      font-weight: bold;
+      min-width: 2.5em;
+      text-align: right;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #304050;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #a8d8ea;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #a8d8ea;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* ---- Canvas ---- */
     canvas {
       display: block;
       border-radius: 10px;
       width: 100%;
       height: auto;
     }
-    #net-canvas    { background: #0d1428; }
+    #net-canvas     { background: #0d1428; }
     #preview-canvas { background: #0d1428; }
 
-    /* ---- Desktop layout ---- */
+    /* ---- Desktop: 2×2グリッド (≥860px) ----
+       [palette-panel] [net-panel   ]
+       [rotation-panel][preview-panel]
+    ---- */
     @media (min-width: 860px) {
       body { padding: 20px 16px 40px; gap: 20px; }
-      h1 { font-size: 1.5rem; }
+      h1   { font-size: 1.5rem; }
 
       #app {
-        flex-direction: row;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      #palette-panel {
-        width: 220px;
-        flex: 0 0 220px;
-      }
-
-      #palette {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 7px;
-      }
-
-      .color-btn { height: 52px; font-size: 0.68rem; }
-
-      .btn-group { flex-direction: column; }
-
-      .action-btn { padding: 9px 0; font-size: 0.85rem; }
-
-      /* net and preview panels: auto width */
-      #net-panel, #preview-panel {
+        display: grid;
+        /* 列2はコンテンツ幅（max-content）に合わせる */
+        grid-template-columns: 220px max-content;
+        grid-template-rows: auto auto;
+        gap: 20px;
+        align-items: start;
+        /* 全体をコンテンツ幅に縮め、bodyのalign-items:centerで中央揃え */
         width: auto;
-        flex: 0 0 auto;
+        max-width: none;
       }
 
-      canvas { width: auto; height: auto; }
+      #palette-panel   { grid-column: 1; grid-row: 1; }
+      #net-panel       { grid-column: 2; grid-row: 1; }
+      #rotation-panel  { grid-column: 1; grid-row: 2; }
+      #preview-panel   { grid-column: 2; grid-row: 2; }
+
+      #palette { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+      .color-btn   { height: 52px; font-size: 0.68rem; }
+      .btn-group   { flex-direction: column; flex-wrap: nowrap; }
+      .action-btn  { flex: none; width: 100%; padding: 9px 10px; font-size: 0.85rem; }
+      #btn-default-view { width: 100%; }
+
+      /* canvasは自然サイズ（コンテナより小さければ縮小） */
+      canvas { max-width: 100%; width: auto; height: auto; }
     }
   </style>
 </head>
@@ -166,17 +212,15 @@
 
 <div id="app">
 
-  <!-- Left: palette + controls -->
+  <!-- [1,1] 色を選択 -->
   <div class="panel" id="palette-panel">
     <div class="panel-title">色を選択</div>
     <div id="palette"></div>
-
     <div class="btn-group">
       <button class="action-btn" id="btn-solved">揃った状態にする</button>
       <button class="action-btn" id="btn-reset">全消し（グレー）</button>
       <button class="action-btn" id="btn-save">3D画像をPNG保存</button>
     </div>
-
     <p class="tip">
       <span>① 色を選択</span><br>
       <span>② 展開図のステッカーをクリック</span><br>
@@ -184,13 +228,33 @@
     </p>
   </div>
 
-  <!-- Center: net -->
+  <!-- [1,2] 展開図 -->
   <div class="panel" id="net-panel">
     <div class="panel-title">展開図（タップ/クリックで色を変更）</div>
     <canvas id="net-canvas" width="720" height="420"></canvas>
   </div>
 
-  <!-- Right: 3D preview -->
+  <!-- [2,1] 視点調整 -->
+  <div class="panel" id="rotation-panel">
+    <div class="panel-title">視点調整</div>
+    <div class="rotation-row">
+      <div class="rotation-label">
+        <span>水平回転</span>
+        <span class="rot-val"><span id="lbl-roth">9</span>°</span>
+      </div>
+      <input type="range" id="slider-roth" min="-180" max="180" value="9">
+    </div>
+    <div class="rotation-row" style="margin-bottom:10px;">
+      <div class="rotation-label">
+        <span>垂直角度</span>
+        <span class="rot-val"><span id="lbl-rotv">36</span>°</span>
+      </div>
+      <input type="range" id="slider-rotv" min="-180" max="180" value="36">
+    </div>
+    <button class="action-btn" id="btn-default-view">デフォルト視点に戻す</button>
+  </div>
+
+  <!-- [2,2] 3Dプレビュー -->
   <div class="panel" id="preview-panel">
     <div class="panel-title">3Dプレビュー</div>
     <canvas id="preview-canvas" width="460" height="460"></canvas>
