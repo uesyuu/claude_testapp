@@ -175,8 +175,8 @@ function buildFaceNet2D(cx, cy, r, rotDeg) {
   return STICKER_PATTERNS.map(p => p.map(idx => [VF[idx][0], VF[idx][1]]));
 }
 
-// Layout: two flowers
-function buildNetLayout(W, H) {
+// Layout: two flowers (vertical = stacked top/bottom, horizontal = side by side)
+function buildNetLayout(W, H, vertical) {
   const inradius = NET_R * Math.cos(PI / 5); // R*cos(36°)
   // Adjacent pentagon centers are at distance 2*inradius (exact edge-sharing)
   // and at angles -54+72*k° (= edge midpoint directions of the center pentagon with rot=-90)
@@ -184,9 +184,12 @@ function buildNetLayout(W, H) {
 
   const layout = [];
 
-  const flowers = [
-    { cx: W * 0.25, cy: H * 0.5 },  // faces 0-5
-    { cx: W * 0.75, cy: H * 0.5 },  // faces 6-11
+  const flowers = vertical ? [
+    { cx: W * 0.5,  cy: H * 0.26 },  // faces 0-5  (top)
+    { cx: W * 0.5,  cy: H * 0.74 },  // faces 6-11 (bottom)
+  ] : [
+    { cx: W * 0.25, cy: H * 0.5  },  // faces 0-5  (left)
+    { cx: W * 0.75, cy: H * 0.5  },  // faces 6-11 (right)
   ];
 
   flowers.forEach(({ cx, cy }, fi) => {
@@ -210,10 +213,20 @@ function buildNetLayout(W, H) {
 
 let netLayout = null;
 let hitAreas = []; // { si, stickerIdx, poly2D }
+let netVertical = false; // current layout orientation
 
 function buildNet(canvas) {
+  netVertical = window.innerWidth < 860;
+  if (netVertical) {
+    canvas.width  = 360;
+    canvas.height = 760;
+  } else {
+    canvas.width  = 720;
+    canvas.height = 420;
+  }
+
   const W = canvas.width, H = canvas.height;
-  netLayout = buildNetLayout(W, H);
+  netLayout = buildNetLayout(W, H, netVertical);
   hitAreas = [];
 
   for (let si = 0; si < 12; si++) {
@@ -234,20 +247,30 @@ function redrawNet(canvas) {
   ctx.fillStyle = '#0f3460';
   ctx.fillRect(0, 0, W, H);
 
-  // Draw divider
+  // Divider line between two groups
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(W / 2, 20);
-  ctx.lineTo(W / 2, H - 20);
+  if (netVertical) {
+    ctx.moveTo(20,    H / 2);
+    ctx.lineTo(W - 20, H / 2);
+  } else {
+    ctx.moveTo(W / 2, 20);
+    ctx.lineTo(W / 2, H - 20);
+  }
   ctx.stroke();
 
   // Labels for two groups
   ctx.fillStyle = 'rgba(168,216,234,0.6)';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('上半分 (面0-5)', W * 0.25, 16);
-  ctx.fillText('下半分 (面6-11)', W * 0.75, 16);
+  if (netVertical) {
+    ctx.fillText('上半分 (面0-5)',  W * 0.5, 16);
+    ctx.fillText('下半分 (面6-11)', W * 0.5, H / 2 + 16);
+  } else {
+    ctx.fillText('上半分 (面0-5)',  W * 0.25, 16);
+    ctx.fillText('下半分 (面6-11)', W * 0.75, 16);
+  }
 
   for (let si = 0; si < 12; si++) {
     const { cx, cy, rot } = netLayout[si];
@@ -391,5 +414,15 @@ window.addEventListener('DOMContentLoaded', () => {
     link.download = 'megaminx.png';
     link.href = previewCanvas.toDataURL('image/png');
     link.click();
+  });
+
+  // Rebuild net when crossing the mobile/desktop breakpoint
+  let lastVertical = netVertical;
+  window.addEventListener('resize', () => {
+    const nowVertical = window.innerWidth < 860;
+    if (nowVertical !== lastVertical) {
+      lastVertical = nowVertical;
+      buildNet(netCanvas);
+    }
   });
 });
