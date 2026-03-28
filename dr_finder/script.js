@@ -27,10 +27,12 @@ const elEODepth = document.getElementById("eo_depth");
 const elEODepthNum = document.getElementById("eo_depth_num");
 const elEONumber = document.getElementById("eo_number");
 const elEONumberNum = document.getElementById("eo_number_num");
+const elEOHiddenNum = document.getElementById("eo_hidden_num");
 const elRZPDepth = document.getElementById("rzp_depth");
 const elRZPDepthNum = document.getElementById("rzp_depth_num");
 const elRZPNumber = document.getElementById("rzp_number");
 const elRZPNumberNum = document.getElementById("rzp_number_num");
+const elRZPHiddenNum = document.getElementById("rzp_hidden_num");
 const elDRDepth = document.getElementById("dr_depth");
 const elDRDepthNum = document.getElementById("dr_depth_num");
 const elDRNumber = document.getElementById("dr_number");
@@ -554,12 +556,16 @@ function search() {
     elSolutionPre.style.display = "none";
 
     let eoNumber = 0;
+    let eoHiddenNumber = 0;
     let eoMinMoves = new Map();
     while (elEOListContent.firstChild) elEOListContent.removeChild(elEOListContent.lastChild);
     while (elRZPListContent.firstChild) elRZPListContent.removeChild(elRZPListContent.lastChild);
     elEOListDetails.removeAttribute("open");
     elRZPListDetails.removeAttribute("open");
+    elEOHiddenNum.textContent = "";
+    elRZPHiddenNum.textContent = "";
     let rzpNumber = 0;
+    let rzpHiddenNumber = 0;
     let drNumber = 0;
     let drUniqueNumber = 0;
     let drNumberSubsets = new Map();
@@ -666,14 +672,16 @@ function search() {
             eoHtml += ` (${eoInfoString(eo)})`;
             eoHtml += ` (<span class="has-text-weight-bold">${eo.moves}</span>`;
             eoHtml += `/<span class="has-text-weight-bold">${eo.moves}</span>)`;
-            const eoListLi = document.createElement("li");
-            eoListLi.innerHTML = eoHtml;
-            eoListLi.dataset.eoId = eo.id;
-            elEOListContent.appendChild(eoListLi);
-
             if (hide) {
+                eoHiddenNumber++;
+                elEOHiddenNum.textContent = ` (${eoNumber - eoHiddenNumber})`;
                 hiddenContainer.appendChild(ul);
             } else {
+                const eoListLi = document.createElement("li");
+                eoListLi.innerHTML = eoHtml;
+                eoListLi.dataset.eoId = eo.id;
+                elEOListContent.appendChild(eoListLi);
+
                 const li = document.createElement("li");
                 li.innerHTML = eoHtml;
                 elDRs.appendChild(li);
@@ -699,9 +707,14 @@ function search() {
             html += `/<span class="has-text-weight-bold">${rzp.moves+rzp.eo.moves}</span>)`;
 
             const eoListLiForRZP = elEOListContent.querySelector(`[data-eo-id="${rzp.eo.id}"]`);
-            const rzpListLi = document.createElement("li");
-            rzpListLi.innerHTML = (eoListLiForRZP ? eoListLiForRZP.innerHTML + " / " : "") + html;
-            elRZPListContent.appendChild(rzpListLi);
+            if (eoListLiForRZP) {
+                const rzpListLi = document.createElement("li");
+                rzpListLi.innerHTML = eoListLiForRZP.innerHTML + " / " + html;
+                elRZPListContent.appendChild(rzpListLi);
+            } else {
+                rzpHiddenNumber++;
+                elRZPHiddenNum.textContent = ` (${rzpNumber - rzpHiddenNumber})`;
+            }
 
             const eo = document.getElementById("eo_"+rzp.eo.id);
             eo.style.display = "block";
