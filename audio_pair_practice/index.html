@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Pair Practice</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
+
+    #word {
+      font-size: clamp(3rem, 15vw, 8rem);
+      font-weight: bold;
+      color: #a8d8ea;
+      letter-spacing: 0.05em;
+      transition: opacity 0.1s ease;
+    }
+
+    #word.fade {
+      opacity: 0;
+    }
+
+    #hint {
+      margin-top: 2rem;
+      font-size: clamp(0.75rem, 3vw, 1rem);
+      color: #555577;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="word"></div>
+  <div id="hint" id="hint">tap / space to change</div>
+
+  <script>
+    const csvData = `,,,,,,,,,,,,,,,,,,,,,,,,
+,,/,ua,ea,da,ka,ta,ja,ma,ga,sa,sha,ha,fa,za,ia,cha,ba,pa,oa,na,ya,ra,wa
+,,au,/,eu,du,ku,tu,ju,mu,gu,su,shu,hau,fu,zu,iu,chu,bu,pu,ou,ni,yu,ru,wau
+,,ae,ue,/,de,ke,te,je,me,ge,se,she,he,fe,ze,ie,che,be,pe,oe,nu,ye,re,we
+,,ad,ud,ed,/,koo,too,joo,moo,goo,soo,shoo,hoo,foo,zoo,id,choo,boo,poo,od,noo,yoo,roo,woo
+,,ak,uk,ek,daa,/,taa,jaa,maa,gaa,saa,shaa,haa,faa,zaa,ik,chaa,baa,paa,ok,naa,yaa,raa,waa
+,,ats,uts,ets,dii,kii,/,jii,mii,gii,sui,shii,hii,fii,zui,its,chii,bii,pii,ots,nii,yui,rii,wii
+,,aj,uj,ej,doi,koi,toi,/,moi,goi,soi,shoi,hoi,foi,zoi,ij,choi,boi,poi,oj,noi,yoi,roi,woi
+,,am,um,em,das,kas,tas,jas,/,gas,sas,shas,has,fas,zas,im,chas,bas,pas,om,nas,yas,ras,was
+,,ag,ug,eg,dis,kis,tis,jis,mis,/,sos,shis,his,fis,zos,ig,chis,bis,pis,og,nis,yos,ris,wis
+,,as,us,es,dos,kus,tos,jus,mus,gus,/,shus,hos,fus,zus,is,chus,bus,pus,os,nus,yus,rus,wos
+,,ash,ush,esh,duu,kuu,tuu,juu,muu,guu,suu,/,hyuu,fuu,zuu,ish,chuu,buu,puu,osh,nuu,yuu,ruu,wuu
+,,a,u,e,dak,kak,tak,jak,chak,gak,sak,shak,/,fak,zak,i,chak,bak,pak,o,nak,yak,rak,wak
+,,af,uf,ef,dik,kik,tik,jik,mik,gik,sok,shik,hik,/,zok,if,chik,bik,pik,of,nik,yok,rik,wik
+,,az,uz,ez,dok,kuk,tok,juk,muk,guk,suk,shuk,hok,fuk,/,iz,chuk,buk,puk,oz,nuk,yuk,ruk,wok
+,,ai,ui,ei,di,ki,ti,ji,mi,gi,shai,shi,hi,fi,zai,/,chi,bi,pi,oi,ni,yai,ri,wi
+,,ach,uch,ech,dek,kek,tek,jek,mek,gek,sek,shek,hek,fek,zek,ich,/,bek,pek,och,nek,yek,rek,wek
+,,ab,ub,eb,des,kes,tes,jes,mes,ges,ses,shes,hes,fes,zes,ib,ches,/,pes,ob,nes,yes,res,wes
+,,ap,up,ep,dee,kee,tee,jee,mee,gee,see,shoo,hee,fee,zee,ip,chee,bee,/,op,nee,yee,ree,wee
+,,ao,uo,eo,do,ko,to,jo,mo,go,so,sho,ho,fo,zo,io,cho,bo,po,/,no,yo,ro,wo
+,,an,un,en,dan,kan,tan,jan,man,gan,san,shan,han,fan,zan,in,chan,ban,pan,on,/,yan,ran,wan
+,,kyay,kyuy,key,din,kin,tin,jin,min,gin,son,shin,hin,fin,zon,ii,chin,bin,pin,kyoy,nin,/,rin,win
+,,aru,uru,eru,don,kun,ton,jun,mun,gun,sun,shun,hon,fun,zun,iru,chun,bun,pun,oru,nun,yun,/,won
+,,kyaw,kyuw,kew,den,ken,ten,jen,men,gen,sen,shen,hen,fen,zen,kiw,chen,ben,pen,kyow,nen,yen,ren,/`;
+
+    function parseCSV(text) {
+      const seen = new Set();
+      const words = [];
+      for (const line of text.split('\n')) {
+        for (const cell of line.split(',')) {
+          const trimmed = cell.trim();
+          if (/^[a-zA-Z]+$/.test(trimmed) && !seen.has(trimmed)) {
+            seen.add(trimmed);
+            words.push(trimmed);
+          }
+        }
+      }
+      return words;
+    }
+
+    const words = parseCSV(csvData);
+    let lastIndex = -1;
+
+    function getNextIndex() {
+      if (words.length <= 1) return 0;
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * words.length);
+      } while (idx === lastIndex);
+      lastIndex = idx;
+      return idx;
+    }
+
+    const wordEl = document.getElementById('word');
+
+    function showNext() {
+      wordEl.classList.add('fade');
+      setTimeout(() => {
+        wordEl.textContent = words[getNextIndex()];
+        wordEl.classList.remove('fade');
+      }, 100);
+    }
+
+    wordEl.textContent = words[getNextIndex()];
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        showNext();
+      }
+    });
+
+    document.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      showNext();
+    }, { passive: false });
+
+    document.addEventListener('click', () => {
+      showNext();
+    });
+  </script>
+</body>
+</html>
