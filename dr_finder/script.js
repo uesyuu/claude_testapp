@@ -64,18 +64,18 @@ let config;
     if (!config) {
         config = {
             eo_max_depth: 5,
-            eo_max_number: 16,
+            eo_max_number: 256,
             eo_niss: "always",
             rzp_use: true,
-            special_rzp_use: false,
-            rzp_max_depth: 7,
-            rzp_max_number: 32,
+            special_rzp_use: true,
+            rzp_max_depth: 5,
+            rzp_max_number: 256,
             rzp_niss: "before",
-            dr_max_depth: 14,
-            dr_max_number: 32,
-            dr_niss: "always",
-            restrict_trigger_form: false,
-            hide_redundant_eo: false,
+            dr_max_depth: 11,
+            dr_max_number: 256,
+            dr_niss: "before",
+            restrict_trigger_form: true,
+            hide_redundant_eo: true,
             finish_max_depth: 16,
         };
     }
@@ -572,6 +572,8 @@ function search() {
     let drUniqueNumber = 0;
     let drNumberSubsets = new Map();
     let drGroups = new Map();
+    let drIdToEntry = new Map();
+    let drFinishTotal = new Map();
     let best = 9999;
 
     while (elDRs.firstChild) {
@@ -611,16 +613,21 @@ function search() {
             return s;
         }
 
+        function ecSwap(s) {
+            const m = s.match(/^(\d+e)(\d+c)$/);
+            return m ? m[2] + m[1] : s;
+        }
+
         function eoInfoString(eo) {
             infos = [eo.axis];
             if (eo.DRmUD) {
-                infos.push(`DR-${eo.DRmUD} (U/D)`);
+                infos.push(`DR-${ecSwap(eo.DRmUD)} (U/D)`);
             }
             if (eo.DRmFB) {
-                infos.push(`DR-${eo.DRmFB} (F/B)`);
+                infos.push(`DR-${ecSwap(eo.DRmFB)} (F/B)`);
             }
             if (eo.DRmRL) {
-                infos.push(`DR-${eo.DRmRL} (R/L)`);
+                infos.push(`DR-${ecSwap(eo.DRmRL)} (R/L)`);
             }
             return infos.join(", ");
         }
@@ -628,9 +635,9 @@ function search() {
         function rzpInfoString(rzp) {
             infos = [
                 rzp.axis,
-                `DR-${rzp.DRm}`,
-                `AR-${rzp.ARmNormal} (normal)`,
-                `AR-${rzp.ARmInverse} (inverse)`,
+                `DR-${ecSwap(rzp.DRm)}`,
+                `AR-${ecSwap(rzp.ARmNormal)} (normal)`,
+                `AR-${ecSwap(rzp.ARmInverse)} (inverse)`,
             ];
             return infos.join(", ");
         }
@@ -639,7 +646,7 @@ function search() {
             infos = [
                 dr.axis,
                 `${dr.htrSubset[2]}QT`,
-                `HTR-${dr.HTRm}`,
+                `HTR-${ecSwap(dr.HTRm)}`,
                 dr.hyperParity,
                 dr.htrSubset,
             ];
@@ -810,7 +817,7 @@ function search() {
                 elDRUniqueNum.textContent = ""+drUniqueNumber;
                 const li = createDRLi(dr);
                 parent.appendChild(li);
-                axisGroup.set(dr.htrSubset, { bestLi: li, bestN: n, detailsLi: null });
+                axisGroup.set(dr.htrSubset, { bestLi: li, bestN: n, bestDrId: dr.id, detailsLi: null, htrSubset: dr.htrSubset, hiddenBestTotal: Infinity });
             } else {
                 const entry = axisGroup.get(dr.htrSubset);
                 const newLi = createDRLi(dr);
@@ -833,15 +840,32 @@ function search() {
                 const summary = entry.detailsLi.querySelector("summary");
 
                 if (n < entry.bestN) {
+                    const demotedId = entry.bestDrId;
+                    drIdToEntry.set(demotedId, entry);
+                    if (drFinishTotal.has(demotedId)) {
+                        const t = drFinishTotal.get(demotedId);
+                        if (t < entry.hiddenBestTotal) {
+                            entry.hiddenBestTotal = t;
+                        }
+                    }
                     popupUl.insertBefore(entry.bestLi, popupUl.firstChild);
                     entry.detailsLi.parentElement.insertBefore(newLi, entry.detailsLi);
                     entry.bestN = n;
                     entry.bestLi = newLi;
+                    entry.bestDrId = dr.id;
                 } else {
+                    drIdToEntry.set(dr.id, entry);
+                    if (drFinishTotal.has(dr.id)) {
+                        const t = drFinishTotal.get(dr.id);
+                        if (t < entry.hiddenBestTotal) {
+                            entry.hiddenBestTotal = t;
+                        }
+                    }
                     popupUl.appendChild(newLi);
                 }
 
-                summary.textContent = `+${popupUl.children.length} more (${dr.htrSubset})`;
+                const bestStr = entry.hiddenBestTotal < Infinity ? `, best: ${entry.hiddenBestTotal}` : "";
+                summary.textContent = `+${popupUl.children.length} more (${dr.htrSubset}${bestStr})`;
             }
         }
         if (data.type=="finish") {
@@ -851,6 +875,18 @@ function search() {
             const eo = rzp.eo;
 
             const num = finish.moves+dr.moves+rzp.moves+eo.moves;
+
+            drFinishTotal.set(dr.id, num);
+            if (drIdToEntry.has(dr.id)) {
+                const entry = drIdToEntry.get(dr.id);
+                if (num < entry.hiddenBestTotal) {
+                    entry.hiddenBestTotal = num;
+                    const popupUl = entry.detailsLi.querySelector("ul");
+                    const summary = entry.detailsLi.querySelector("summary");
+                    summary.textContent = `+${popupUl.children.length} more (${entry.htrSubset}, best: ${num})`;
+                }
+            }
+
             if (num<best) {
                 best = num;
                 elSolution.style.display = "block";
@@ -1006,19 +1042,19 @@ elRZPUse.addEventListener("input", () => {
 
 elReset.addEventListener("click", () => {
     elEOMaxDepth.value = "5";
-    elEOMaxNumber.value = "16";
+    elEOMaxNumber.value = "256";
     elEONiss.value = "always";
     elRZPUse.checked = true;
-    elSpecialRZPUse.checked = false;
+    elSpecialRZPUse.checked = true;
     elRZP.style.display = "block";
-    elRZPMaxDepth.value = "7";
-    elRZPMaxNumber.value = "32";
+    elRZPMaxDepth.value = "5";
+    elRZPMaxNumber.value = "256";
     elRZPNiss.value = "before";
-    elDRMaxDepth.value = "14";
-    elDRMaxNumber.value = "32";
-    elDRNiss.value = "always";
-    elRestrictTriggerForm.checked = false;
-    elHideRedundantEO.checked = false;
+    elDRMaxDepth.value = "11";
+    elDRMaxNumber.value = "256";
+    elDRNiss.value = "before";
+    elRestrictTriggerForm.checked = true;
+    elHideRedundantEO.checked = true;
     elFinishMaxDepth.value = "16";
 
     search();
