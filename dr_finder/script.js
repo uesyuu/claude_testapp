@@ -557,7 +557,9 @@ function search() {
 
     let eoNumber = 0;
     let eoHiddenNumber = 0;
-    let eoMinMoves = new Map();
+    let eoMinMovesNormal = new Map();
+    let eoMinMovesInverse = new Map();
+    let eoMinMovesNiss = new Map();
     while (elEOListContent.firstChild) elEOListContent.removeChild(elEOListContent.lastChild);
     while (elRZPListContent.firstChild) elRZPListContent.removeChild(elRZPListContent.lastChild);
     elEOListDetails.removeAttribute("open");
@@ -656,13 +658,27 @@ function search() {
 
             const eo = data.eo;
 
-            if (!eoMinMoves.has(eo.axis) || eo.moves < eoMinMoves.get(eo.axis)) {
-                eoMinMoves.set(eo.axis, eo.moves);
+            const isNissEO = eo.normal.length > 0 && eo.inverse.length > 0;
+            const isInverseOnly = eo.normal.length == 0;
+            const isNormalOnly = !isNissEO && !isInverseOnly;
+
+            if (isNormalOnly) {
+                if (!eoMinMovesNormal.has(eo.axis) || eo.moves < eoMinMovesNormal.get(eo.axis))
+                    eoMinMovesNormal.set(eo.axis, eo.moves);
+            } else if (isInverseOnly) {
+                if (!eoMinMovesInverse.has(eo.axis) || eo.moves < eoMinMovesInverse.get(eo.axis))
+                    eoMinMovesInverse.set(eo.axis, eo.moves);
+            } else {
+                if (!eoMinMovesNiss.has(eo.axis) || eo.moves < eoMinMovesNiss.get(eo.axis))
+                    eoMinMovesNiss.set(eo.axis, eo.moves);
             }
 
-            const hide = hideRedundantEO &&
-                eoMinMoves.get(eo.axis) <= 4 &&
-                eo.moves >= 5;
+            let hide = false;
+            if (hideRedundantEO && eo.moves >= 5) {
+                if (isNormalOnly  && eoMinMovesNormal.get(eo.axis)  <= 4) hide = true;
+                if (isInverseOnly && eoMinMovesInverse.get(eo.axis) <= 4) hide = true;
+                if (isNissEO      && eoMinMovesNiss.get(eo.axis)    <= 3) hide = true;
+            }
 
             const ul = document.createElement("ul");
             ul.id = "eo_"+eo.id;
@@ -674,7 +690,6 @@ function search() {
             eoHtml += `/<span class="has-text-weight-bold">${eo.moves}</span>)`;
             if (hide) {
                 eoHiddenNumber++;
-                elEOHiddenNum.textContent = ` (${eoNumber - eoHiddenNumber})`;
                 hiddenContainer.appendChild(ul);
             } else {
                 const eoListLi = document.createElement("li");
@@ -686,6 +701,9 @@ function search() {
                 li.innerHTML = eoHtml;
                 elDRs.appendChild(li);
                 li.appendChild(ul);
+            }
+            if (eoHiddenNumber > 0) {
+                elEOHiddenNum.textContent = ` (${eoNumber - eoHiddenNumber})`;
             }
         }
         if (data.type=="rzp_depth") {
@@ -713,6 +731,8 @@ function search() {
                 elRZPListContent.appendChild(rzpListLi);
             } else {
                 rzpHiddenNumber++;
+            }
+            if (rzpHiddenNumber > 0) {
                 elRZPHiddenNum.textContent = ` (${rzpNumber - rzpHiddenNumber})`;
             }
 
