@@ -25,6 +25,20 @@
       cursor: pointer;
     }
 
+    #title {
+      font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+      color: #aabbcc;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.03em;
+    }
+
+    #counter {
+      font-size: clamp(1rem, 4vw, 1.4rem);
+      color: #99aacc;
+      margin-bottom: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
+
     #word {
       font-size: clamp(3rem, 15vw, 8rem);
       font-weight: bold;
@@ -37,52 +51,103 @@
       opacity: 0;
     }
 
+    #word.done {
+      color: #445566;
+    }
+
     #hint {
       margin-top: 2rem;
       font-size: clamp(0.75rem, 3vw, 1rem);
       color: #555577;
       text-align: center;
     }
+
+    #toggle {
+      position: fixed;
+      bottom: 2rem;
+      background: #2a2a4a;
+      color: #a8d8ea;
+      border: 1px solid #a8d8ea44;
+      border-radius: 8px;
+      padding: 0.6rem 1.4rem;
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.8rem, 3vw, 1rem);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    #toggle:active {
+      background: #3a3a5a;
+    }
   </style>
 </head>
 <body>
+  <div id="title"></div>
+  <div id="counter"></div>
   <div id="word"></div>
-  <div id="hint" id="hint">tap / space to change</div>
+  <div id="hint">tap / space to change</div>
+  <button id="toggle"></button>
 
   <script>
-    const csvData = `,,,,,,,,,,,,,,,,,,,,,,,,
-,,/,ua,ea,da,ka,ta,ja,ma,ga,sa,sha,ha,fa,za,ia,cha,ba,pa,oa,na,ya,ra,wa
-,,au,/,eu,du,ku,tu,ju,mu,gu,su,shu,hau,fu,zu,iu,chu,bu,pu,ou,ni,yu,ru,wau
-,,ae,ue,/,de,ke,te,je,me,ge,se,she,he,fe,ze,ie,che,be,pe,oe,nu,ye,re,we
-,,ad,ud,ed,/,koo,too,joo,moo,goo,soo,shoo,hoo,foo,zoo,id,choo,boo,poo,od,noo,yoo,roo,woo
-,,ak,uk,ek,daa,/,taa,jaa,maa,gaa,saa,shaa,haa,faa,zaa,ik,chaa,baa,paa,ok,naa,yaa,raa,waa
-,,ats,uts,ets,dii,kii,/,jii,mii,gii,sui,shii,hii,fii,zui,its,chii,bii,pii,ots,nii,yui,rii,wii
-,,aj,uj,ej,doi,koi,toi,/,moi,goi,soi,shoi,hoi,foi,zoi,ij,choi,boi,poi,oj,noi,yoi,roi,woi
-,,am,um,em,das,kas,tas,jas,/,gas,sas,shas,has,fas,zas,im,chas,bas,pas,om,nas,yas,ras,was
-,,ag,ug,eg,dis,kis,tis,jis,mis,/,sos,shis,his,fis,zos,ig,chis,bis,pis,og,nis,yos,ris,wis
-,,as,us,es,dos,kus,tos,jus,mus,gus,/,shus,hos,fus,zus,is,chus,bus,pus,os,nus,yus,rus,wos
-,,ash,ush,esh,duu,kuu,tuu,juu,muu,guu,suu,/,hyuu,fuu,zuu,ish,chuu,buu,puu,osh,nuu,yuu,ruu,wuu
-,,a,u,e,dak,kak,tak,jak,chak,gak,sak,shak,/,fak,zak,i,chak,bak,pak,o,nak,yak,rak,wak
-,,af,uf,ef,dik,kik,tik,jik,mik,gik,sok,shik,hik,/,zok,if,chik,bik,pik,of,nik,yok,rik,wik
-,,az,uz,ez,dok,kuk,tok,juk,muk,guk,suk,shuk,hok,fuk,/,iz,chuk,buk,puk,oz,nuk,yuk,ruk,wok
-,,ai,ui,ei,di,ki,ti,ji,mi,gi,shai,shi,hi,fi,zai,/,chi,bi,pi,oi,ni,yai,ri,wi
-,,ach,uch,ech,dek,kek,tek,jek,mek,gek,sek,shek,hek,fek,zek,ich,/,bek,pek,och,nek,yek,rek,wek
-,,ab,ub,eb,des,kes,tes,jes,mes,ges,ses,shes,hes,fes,zes,ib,ches,/,pes,ob,nes,yes,res,wes
-,,ap,up,ep,dee,kee,tee,jee,mee,gee,see,shoo,hee,fee,zee,ip,chee,bee,/,op,nee,yee,ree,wee
-,,ao,uo,eo,do,ko,to,jo,mo,go,so,sho,ho,fo,zo,io,cho,bo,po,/,no,yo,ro,wo
-,,an,un,en,dan,kan,tan,jan,man,gan,san,shan,han,fan,zan,in,chan,ban,pan,on,/,yan,ran,wan
-,,kyay,kyuy,key,din,kin,tin,jin,min,gin,son,shin,hin,fin,zon,ii,chin,bin,pin,kyoy,nin,/,rin,win
-,,aru,uru,eru,don,kun,ton,jun,mun,gun,sun,shun,hon,fun,zun,iru,chun,bun,pun,oru,nun,yun,/,won
-,,kyaw,kyuw,kew,den,ken,ten,jen,men,gen,sen,shen,hen,fen,zen,kiw,chen,ben,pen,kyow,nen,yen,ren,/`;
+    const edgeCsv = `,,a,u,e,d,k,t,j,m,g,s,sh,h,f,z,i,ch,b,p,o,n,y,r,w
+a,a,/,ua,ea,da,ka,ta,,ma,ga,sa,sha,ha,fa,za,ia,cha,ba,pa,,na,ya,ra,wa
+u,u/au,au,/,eu,du,ku,tu,,mu,gu,su,,hau,fu,zu,iu,chu,bu,pu,ou,nu,yu,ru,wau
+e,e,ae,ue,/,de,ke,te,,me,ge,se,she,he,fe,ze,,che,be,pe,oe,ne,ye,re,we
+d,oo,ad,ud,ed,/,koo,too,,moo,goo,soo,shoo,hoo,foo,zoo,id,choo,boo,,od,noo,yoo,roo,woo
+k,aa,ak,uk,ek,daa,/,taa,,maa,gaa,saa,shaa,haa,faa,zaa,ik,chaa,baa,paa,ok,naa,yaa,raa,
+t,ii/ui,ats,uts,ets,dii,kii,/,,,gii,sui,shii,hii,fii,zui,its,chii,bii,pii,ots,nii,yui,rii,wii
+j,oi,,,,,,,,,,,,,,,,,,,,,,,
+m,as,am,um,em,das,kas,,,/,gas,sas,shas,has,fas,zas,im,chas,bas,pas,om,nas,yas,ras,was
+g,is/os,ag,ug,eg,dis,kis,tis,,mis,/,sos,shis,his,fis,zos,ig,chis,bis,pis,og,nis,yos,,wis
+s,us/os,as,us,es,dos,kus,tos,,mus,gus,/,shus,,fus,zus,is,chus,bus,pus,os,nus,yus,rus,wos
+sh,uu,ash,,esh,duu,kuu,tuu,,muu,guu,suu,/,hyuu,fuu,zuu,ish,chuu,buu,puu,osh,nuu,yuu,ruu,wuu
+h,ak,a,u,e,dak,kak,tak,,mak,gak,,shak,/,fak,zak,i,chak,bak,pak,o,nak,yak,rak,wak
+f,ik/ok,af,uf,ef,dik,kik,tik,,mik,gik,sok,shik,hik,/,zok,if,chik,bik,pik,of,nik,,rik,wik
+z,uk/ok,az,uz,ez,dok,kuk,tok,,muk,guk,suk,shuk,hok,fuk,/,iz,,buk,puk,oz,nuk,yuk,ruk,wok
+i,i/ai,ai,ui,,di,ki,ti,,mi,gi,sai,shi,hi,fi,zai,/,chi,bi,pi,oi,ni,yai,ri,wi
+ch,ek,ach,uch,ech,dek,kek,tek,,mek,gek,sek,shek,hek,fek,,ich,/,bek,pek,och,nek,yek,rek,wek
+b,es,ab,ub,eb,des,kes,tes,,mes,ges,ses,shes,hes,fes,zes,ib,ches,/,pes,ob,,yes,res,wes
+p,ee,ap,up,ep,,kee,tee,,mee,gee,see,shee,hee,fee,zee,ip,chee,bee,/,op,nee,yee,ree,wee
+o,o,,uo,eo,do,ko,to,,mo,go,so,sho,ho,fo,zo,io,cho,bo,po,/,no,yo,ro,wo
+n,an,an,un,en,dan,kan,tan,,man,gan,san,shan,han,fan,zan,in,chan,,pan,on,/,yan,ran,wan
+y,in/on,kyay,kyuy,key,din,kin,tin,,min,gin,son,shin,hin,,zon,ii,chin,bin,pin,kyoy,nin,/,rin,win
+r,un/on,aru,uru,eru,don,kun,ton,,mun,,sun,shun,hon,fun,zun,iru,chun,bun,pun,oru,nun,yun,/,won
+w,en,kyaw,kyuw,kew,den,,ten,,men,gen,sen,shen,hen,fen,zen,kiw,chen,ben,pen,kyow,nen,yen,ren,/`;
 
+    const cornerCsv = `,,i,u,e,o,k,a,j,m,g,s,sh,h,f,z,t,ch,b,p,d,n,y,r,w
+i,i/ai,/,ui,ei,oi,ki,,,mi,gi,sai,,hi,fi,zai,ti,chi,bi,,di,ni,yai,ri,wi
+u,u/au,iu,/,eu,ou,ku,au,,mu,gu,,shu,hau,fu,zu,,chu,bu,,du,nu,yu,ru,wau
+e,e,ie,ue,/,oe,ke,ae,,me,ge,se,she,he,fe,,te,che,be,,,ne,ye,re,we
+o,o,io,uo,eo,/,ko,ao,,mo,go,so,sho,ho,fo,zo,to,cho,,,do,no,yo,ro,
+k,aa,ik,uk,ek,ok,/,ak,,,gaa,saa,shaa,haa,faa,zaa,taa,chaa,baa,,daa,naa,yaa,,waa
+a,a,,ua,ea,oa,ka,/,,ma,ga,sa,,ha,fa,za,ta,cha,ba,,da,na,ya,ra,wa
+j,oi,,,,,,,,,,,,,,,,,,,,,,,
+m,as,im,um,em,om,,am,,/,gas,sas,shas,has,fas,zas,tas,chas,bas,,das,nas,yas,,was
+g,is/os,ig,ug,eg,og,kis,ag,,mis,/,sos,shis,,fis,zos,tis,chis,bis,,dis,nis,,ris,wis
+s,us/os,is,,es,os,kus,as,,mus,gus,/,shus,hos,fus,zus,,chus,bus,,dos,nus,yus,rus,wos
+sh,uu,,ush,esh,osh,kuu,,,muu,guu,suu,/,hyuu,fuu,zuu,tuu,chuu,buu,,duu,nuu,yuu,ruu,wuu
+h,ak,i,u,e,o,kak,a,,mak,,sak,shak,/,fak,zak,tak,chak,bak,,dak,nak,,rak,wak
+f,ik/ok,if,uf,ef,of,kik,af,,mik,gik,sok,shik,hik,/,zok,tik,,bik,,dik,,yok,rik,wik
+z,uk/ok,iz,uz,,oz,kuk,az,,muk,guk,suk,shuk,hok,fuk,/,tok,chuk,buk,,,nuk,yuk,ruk,wok
+t,ii/ui,its,,ets,ots,kii,ats,,mii,gii,,shii,hii,fii,zui,/,chii,bii,,dii,nii,yui,rii,wii
+ch,ek,ich,uch,ech,och,kek,ach,,mek,gek,sek,shek,hek,,zek,tek,/,bek,,dek,,yek,rek,wek
+b,es,ib,ub,eb,,kes,ab,,mes,ges,ses,shes,hes,fes,zes,tes,ches,/,,des,nes,yes,res,
+p,ee,,,,,,,,,,,,,,,,,,,,,,,
+d,oo,id,ud,,od,koo,ad,,moo,goo,soo,shoo,hoo,foo,,too,choo,boo,,/,noo,yoo,roo,woo
+n,an,in,un,en,on,kan,an,,man,gan,san,shan,han,,zan,tan,,ban,,dan,/,yan,ran,wan
+y,in/on,ii,kyuy,key,kyoy,kin,kyay,,min,,son,shin,,fin,zon,tin,chin,bin,,din,nin,/,rin,win
+r,un/on,iru,uru,eru,oru,,aru,,,gun,sun,shun,hon,fun,zun,ton,chun,bun,,don,nun,yun,/,won
+w,en,kiw,kyuw,kew,,ken,kyaw,,men,gen,sen,shen,hen,fen,zen,ten,chen,,,den,nen,yen,ren,/`;
+
+    // Skip row 0 (header) and columns 0-1 (label columns)
     function parseCSV(text) {
-      const seen = new Set();
       const words = [];
-      for (const line of text.split('\n')) {
-        for (const cell of line.split(',')) {
-          const trimmed = cell.trim();
-          if (/^[a-zA-Z]+$/.test(trimmed) && !seen.has(trimmed)) {
-            seen.add(trimmed);
+      const rows = text.split('\n');
+      for (let r = 1; r < rows.length; r++) {
+        const cells = rows[r].split(',');
+        for (let c = 2; c < cells.length; c++) {
+          const trimmed = cells[c].trim();
+          if (/^[a-zA-Z]+$/.test(trimmed)) {
             words.push(trimmed);
           }
         }
@@ -90,30 +155,79 @@
       return words;
     }
 
-    const words = parseCSV(csvData);
-    let lastIndex = -1;
+    const datasets = [
+      { label: 'エッジ用オーディオペア', words: parseCSV(edgeCsv) },
+      { label: 'コーナー用オーディオペア', words: parseCSV(cornerCsv) }
+    ];
 
-    function getNextIndex() {
-      if (words.length <= 1) return 0;
-      let idx;
-      do {
-        idx = Math.floor(Math.random() * words.length);
-      } while (idx === lastIndex);
-      lastIndex = idx;
-      return idx;
+    let current = 0;
+    let shuffled = [];
+    let pos = 0;
+    let done = false;
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
 
+    function initDataset() {
+      shuffled = shuffle(datasets[current].words);
+      pos = 0;
+      done = false;
+    }
+
+    const titleEl = document.getElementById('title');
+    const counterEl = document.getElementById('counter');
     const wordEl = document.getElementById('word');
+    const toggleEl = document.getElementById('toggle');
+
+    function updateUI() {
+      titleEl.textContent = datasets[current].label;
+      const other = (current + 1) % 2;
+      toggleEl.textContent = datasets[other].label + ' →';
+    }
+
+    function updateDisplay() {
+      const total = shuffled.length;
+      if (done) {
+        wordEl.textContent = '終了';
+        wordEl.classList.add('done');
+        counterEl.textContent = `${total}/${total}`;
+      } else {
+        wordEl.textContent = shuffled[pos];
+        wordEl.classList.remove('done');
+        counterEl.textContent = `${pos + 1}/${total}`;
+      }
+    }
 
     function showNext() {
+      if (done) return;
       wordEl.classList.add('fade');
       setTimeout(() => {
-        wordEl.textContent = words[getNextIndex()];
+        if (pos >= shuffled.length - 1) {
+          done = true;
+        } else {
+          pos++;
+        }
+        updateDisplay();
         wordEl.classList.remove('fade');
       }, 100);
     }
 
-    wordEl.textContent = words[getNextIndex()];
+    function switchDataset() {
+      current = (current + 1) % 2;
+      initDataset();
+      updateUI();
+      updateDisplay();
+    }
+
+    updateUI();
+    initDataset();
+    updateDisplay();
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
@@ -123,12 +237,20 @@
     });
 
     document.addEventListener('touchstart', (e) => {
+      if (e.target.closest('#toggle')) return;
       e.preventDefault();
       showNext();
     }, { passive: false });
 
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#toggle')) return;
       showNext();
+    });
+
+    toggleEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      switchDataset();
+      toggleEl.blur();
     });
   </script>
 </body>
