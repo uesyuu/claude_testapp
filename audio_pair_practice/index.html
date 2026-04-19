@@ -89,55 +89,55 @@
   <button id="toggle"></button>
 
   <script>
-    const edgeCsv = `,,a,u,e,d,k,t,j,m,g,s,sh,h,f,z,i,ch,b,p,o,n,y,r,w
-a,a,/,ua,ea,da,ka,ta,,ma,ga,sa,sha,ha,fa,za,ia,cha,ba,pa,,na,ya,ra,wa
-u,u/au,au,/,eu,du,ku,tu,,mu,gu,su,,hau,fu,zu,iu,chu,bu,pu,ou,nu,yu,ru,wau
-e,e,ae,ue,/,de,ke,te,,me,ge,se,she,he,fe,ze,,che,be,pe,oe,ne,ye,re,we
-d,oo,ad,ud,ed,/,koo,too,,moo,goo,soo,shoo,hoo,foo,zoo,id,choo,boo,,od,noo,yoo,roo,woo
-k,aa,ak,uk,ek,daa,/,taa,,maa,gaa,saa,shaa,haa,faa,zaa,ik,chaa,baa,paa,ok,naa,yaa,raa,
-t,ii/ui,ats,uts,ets,dii,kii,/,,,gii,sui,shii,hii,fii,zui,its,chii,bii,pii,ots,nii,yui,rii,wii
-j,oi,,,,,,,,,,,,,,,,,,,,,,,
-m,as,am,um,em,das,kas,,,/,gas,sas,shas,has,fas,zas,im,chas,bas,pas,om,nas,yas,ras,was
-g,is/os,ag,ug,eg,dis,kis,tis,,mis,/,sos,shis,his,fis,zos,ig,chis,bis,pis,og,nis,yos,,wis
-s,us/os,as,us,es,dos,kus,tos,,mus,gus,/,shus,,fus,zus,is,chus,bus,pus,os,nus,yus,rus,wos
-sh,uu,ash,,esh,duu,kuu,tuu,,muu,guu,suu,/,hyuu,fuu,zuu,ish,chuu,buu,puu,osh,nuu,yuu,ruu,wuu
-h,ak,a,u,e,dak,kak,tak,,mak,gak,,shak,/,fak,zak,i,chak,bak,pak,o,nak,yak,rak,wak
-f,ik/ok,af,uf,ef,dik,kik,tik,,mik,gik,sok,shik,hik,/,zok,if,chik,bik,pik,of,nik,,rik,wik
-z,uk/ok,az,uz,ez,dok,kuk,tok,,muk,guk,suk,shuk,hok,fuk,/,iz,,buk,puk,oz,nuk,yuk,ruk,wok
-i,i/ai,ai,ui,,di,ki,ti,,mi,gi,sai,shi,hi,fi,zai,/,chi,bi,pi,oi,ni,yai,ri,wi
-ch,ek,ach,uch,ech,dek,kek,tek,,mek,gek,sek,shek,hek,fek,,ich,/,bek,pek,och,nek,yek,rek,wek
-b,es,ab,ub,eb,des,kes,tes,,mes,ges,ses,shes,hes,fes,zes,ib,ches,/,pes,ob,,yes,res,wes
-p,ee,ap,up,ep,,kee,tee,,mee,gee,see,shee,hee,fee,zee,ip,chee,bee,/,op,nee,yee,ree,wee
-o,o,,uo,eo,do,ko,to,,mo,go,so,sho,ho,fo,zo,io,cho,bo,po,/,no,yo,ro,wo
-n,an,an,un,en,dan,kan,tan,,man,gan,san,shan,han,fan,zan,in,chan,,pan,on,/,yan,ran,wan
-y,in/on,kyay,kyuy,key,din,kin,tin,,min,gin,son,shin,hin,,zon,ii,chin,bin,pin,kyoy,nin,/,rin,win
-r,un/on,aru,uru,eru,don,kun,ton,,mun,,sun,shun,hon,fun,zun,iru,chun,bun,pun,oru,nun,yun,/,won
-w,en,kyaw,kyuw,kew,den,,ten,,men,gen,sen,shen,hen,fen,zen,kiw,chen,ben,pen,kyow,nen,yen,ren,/`;
+    const edgeCsv = `,,,,,,,,,,,,,,,,,,,,,,,,
+,,/,ua,ea,da,ka,ta,,ma,ga,sa,sha,ha,fa,za,ia,cha,ba,pa,,na,ya,ra,wa
+,,au,/,eu,du,ku,tu,,mu,gu,su,,hau,fu,zu,iu,chu,bu,pu,ou,nu,yu,ru,wau
+,,ae,ue,/,de,ke,te,,me,ge,se,she,he,fe,ze,,che,be,pe,oe,ne,ye,re,we
+,,ad,ud,ed,/,koo,too,,moo,goo,soo,shoo,hoo,foo,zoo,id,choo,boo,,od,noo,yoo,roo,woo
+,,ak,uk,ek,daa,/,taa,,maa,gaa,saa,shaa,haa,faa,zaa,ik,chaa,baa,paa,ok,naa,yaa,raa,
+,,ats,uts,ets,dii,kii,/,,,gii,sui,shii,hii,fii,zui,its,chii,bii,pii,ots,nii,yui,rii,wii
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,am,um,em,das,kas,,,/,gas,sas,shas,has,fas,zas,im,chas,bas,pas,om,nas,yas,ras,was
+,,ag,ug,eg,dis,kis,tis,,mis,/,sos,shis,his,fis,zos,ig,chis,bis,pis,og,nis,yos,,wis
+,,as,us,es,dos,kus,tos,,mus,gus,/,shus,,fus,zus,is,chus,bus,pus,os,nus,yus,rus,wos
+,,ash,,esh,duu,kuu,tuu,,muu,guu,suu,/,hyuu,fuu,zuu,ish,chuu,buu,puu,osh,nuu,yuu,ruu,wuu
+,,a,u,e,dak,kak,tak,,mak,gak,,shak,/,fak,zak,i,chak,bak,pak,o,nak,yak,rak,wak
+,,af,uf,ef,dik,kik,tik,,mik,gik,sok,shik,hik,/,zok,if,chik,bik,pik,of,nik,,rik,wik
+,,az,uz,ez,dok,kuk,tok,,muk,guk,suk,shuk,hok,fuk,/,iz,,buk,puk,oz,nuk,yuk,ruk,wok
+,,ai,ui,,di,ki,ti,,mi,gi,sai,shi,hi,fi,zai,/,chi,bi,pi,oi,ni,yai,ri,wi
+,,ach,uch,ech,dek,kek,tek,,mek,gek,sek,shek,hek,fek,,ich,/,bek,pek,och,nek,yek,rek,wek
+,,ab,ub,eb,des,kes,tes,,mes,ges,ses,shes,hes,fes,zes,ib,ches,/,pes,ob,,yes,res,wes
+,,ap,up,ep,,kee,tee,,mee,gee,see,shee,hee,fee,zee,ip,chee,bee,/,op,nee,yee,ree,wee
+,,,uo,eo,do,ko,to,,mo,go,so,sho,ho,fo,zo,io,cho,bo,po,/,no,yo,ro,wo
+,,an,un,en,dan,kan,tan,,man,gan,san,shan,han,fan,zan,in,chan,,pan,on,/,yan,ran,wan
+,,kyay,kyuy,key,din,kin,tin,,min,gin,son,shin,hin,,zon,ii,chin,bin,pin,kyoy,nin,/,rin,win
+,,aru,uru,eru,don,kun,ton,,mun,,sun,shun,hon,fun,zun,iru,chun,bun,pun,oru,nun,yun,/,won
+,,kyaw,kyuw,kew,den,,ten,,men,gen,sen,shen,hen,fen,zen,kiw,chen,ben,pen,kyow,nen,yen,ren,/`;
 
-    const cornerCsv = `,,i,u,e,o,k,a,j,m,g,s,sh,h,f,z,t,ch,b,p,d,n,y,r,w
-i,i/ai,/,ui,ei,oi,ki,,,mi,gi,sai,,hi,fi,zai,ti,chi,bi,,di,ni,yai,ri,wi
-u,u/au,iu,/,eu,ou,ku,au,,mu,gu,,shu,hau,fu,zu,,chu,bu,,du,nu,yu,ru,wau
-e,e,ie,ue,/,oe,ke,ae,,me,ge,se,she,he,fe,,te,che,be,,,ne,ye,re,we
-o,o,io,uo,eo,/,ko,ao,,mo,go,so,sho,ho,fo,zo,to,cho,,,do,no,yo,ro,
-k,aa,ik,uk,ek,ok,/,ak,,,gaa,saa,shaa,haa,faa,zaa,taa,chaa,baa,,daa,naa,yaa,,waa
-a,a,,ua,ea,oa,ka,/,,ma,ga,sa,,ha,fa,za,ta,cha,ba,,da,na,ya,ra,wa
-j,oi,,,,,,,,,,,,,,,,,,,,,,,
-m,as,im,um,em,om,,am,,/,gas,sas,shas,has,fas,zas,tas,chas,bas,,das,nas,yas,,was
-g,is/os,ig,ug,eg,og,kis,ag,,mis,/,sos,shis,,fis,zos,tis,chis,bis,,dis,nis,,ris,wis
-s,us/os,is,,es,os,kus,as,,mus,gus,/,shus,hos,fus,zus,,chus,bus,,dos,nus,yus,rus,wos
-sh,uu,,ush,esh,osh,kuu,,,muu,guu,suu,/,hyuu,fuu,zuu,tuu,chuu,buu,,duu,nuu,yuu,ruu,wuu
-h,ak,i,u,e,o,kak,a,,mak,,sak,shak,/,fak,zak,tak,chak,bak,,dak,nak,,rak,wak
-f,ik/ok,if,uf,ef,of,kik,af,,mik,gik,sok,shik,hik,/,zok,tik,,bik,,dik,,yok,rik,wik
-z,uk/ok,iz,uz,,oz,kuk,az,,muk,guk,suk,shuk,hok,fuk,/,tok,chuk,buk,,,nuk,yuk,ruk,wok
-t,ii/ui,its,,ets,ots,kii,ats,,mii,gii,,shii,hii,fii,zui,/,chii,bii,,dii,nii,yui,rii,wii
-ch,ek,ich,uch,ech,och,kek,ach,,mek,gek,sek,shek,hek,,zek,tek,/,bek,,dek,,yek,rek,wek
-b,es,ib,ub,eb,,kes,ab,,mes,ges,ses,shes,hes,fes,zes,tes,ches,/,,des,nes,yes,res,
-p,ee,,,,,,,,,,,,,,,,,,,,,,,
-d,oo,id,ud,,od,koo,ad,,moo,goo,soo,shoo,hoo,foo,,too,choo,boo,,/,noo,yoo,roo,woo
-n,an,in,un,en,on,kan,an,,man,gan,san,shan,han,,zan,tan,,ban,,dan,/,yan,ran,wan
-y,in/on,ii,kyuy,key,kyoy,kin,kyay,,min,,son,shin,,fin,zon,tin,chin,bin,,din,nin,/,rin,win
-r,un/on,iru,uru,eru,oru,,aru,,,gun,sun,shun,hon,fun,zun,ton,chun,bun,,don,nun,yun,/,won
-w,en,kiw,kyuw,kew,,ken,kyaw,,men,gen,sen,shen,hen,fen,zen,ten,chen,,,den,nen,yen,ren,/`;
+    const cornerCsv = `,,,,,,,,,,,,,,,,,,,,,,,,
+,,/,ui,ei,oi,ki,,,mi,gi,sai,,hi,fi,zai,ti,chi,bi,,di,ni,yai,ri,wi
+,,iu,/,eu,ou,ku,au,,mu,gu,,shu,hau,fu,zu,,chu,bu,,du,nu,yu,ru,wau
+,,ie,ue,/,oe,ke,ae,,me,ge,se,she,he,fe,,te,che,be,,,ne,ye,re,we
+,,io,uo,eo,/,ko,ao,,mo,go,so,sho,ho,fo,zo,to,cho,,,do,no,yo,ro,
+,,ik,uk,ek,ok,/,ak,,,gaa,saa,shaa,haa,faa,zaa,taa,chaa,baa,,daa,naa,yaa,,waa
+,,,ua,ea,oa,ka,/,,ma,ga,sa,,ha,fa,za,ta,cha,ba,,da,na,ya,ra,wa
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,im,um,em,om,,am,,/,gas,sas,shas,has,fas,zas,tas,chas,bas,,das,nas,yas,,was
+,,ig,ug,eg,og,kis,ag,,mis,/,sos,shis,,fis,zos,tis,chis,bis,,dis,nis,,ris,wis
+,,is,,es,os,kus,as,,mus,gus,/,shus,hos,fus,zus,,chus,bus,,dos,nus,yus,rus,wos
+,,,ush,esh,osh,kuu,,,muu,guu,suu,/,hyuu,fuu,zuu,tuu,chuu,buu,,duu,nuu,yuu,ruu,wuu
+,,i,u,e,o,kak,a,,mak,,sak,shak,/,fak,zak,tak,chak,bak,,dak,nak,,rak,wak
+,,if,uf,ef,of,kik,af,,mik,gik,sok,shik,hik,/,zok,tik,,bik,,dik,,yok,rik,wik
+,,iz,uz,,oz,kuk,az,,muk,guk,suk,shuk,hok,fuk,/,tok,chuk,buk,,,nuk,yuk,ruk,wok
+,,its,,ets,ots,kii,ats,,mii,gii,,shii,hii,fii,zui,/,chii,bii,,dii,nii,yui,rii,wii
+,,ich,uch,ech,och,kek,ach,,mek,gek,sek,shek,hek,,zek,tek,/,bek,,dek,,yek,rek,wek
+,,ib,ub,eb,,kes,ab,,mes,ges,ses,shes,hes,fes,zes,tes,ches,/,,des,nes,yes,res,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,id,ud,,od,koo,ad,,moo,goo,soo,shoo,hoo,foo,,too,choo,boo,,/,noo,yoo,roo,woo
+,,in,un,en,on,kan,an,,man,gan,san,shan,han,,zan,tan,,ban,,dan,/,yan,ran,wan
+,,ii,kyuy,key,kyoy,kin,kyay,,min,,son,shin,,fin,zon,tin,chin,bin,,din,nin,/,rin,win
+,,iru,uru,eru,oru,,aru,,,gun,sun,shun,hon,fun,zun,ton,chun,bun,,don,nun,yun,/,won
+,,kiw,kyuw,kew,,ken,kyaw,,men,gen,sen,shen,hen,fen,zen,ten,chen,,,den,nen,yen,ren,/`;
 
     // Skip row 0 (header) and columns 0-1 (label columns)
     function parseCSV(text) {
