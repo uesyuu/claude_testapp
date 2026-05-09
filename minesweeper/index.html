@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Minesweeper (Mania)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    #hud {
+      flex: 0 0 auto;
+      padding: 8px 12px;
+      background: #16213e;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 14px;
+      color: #a8d8ea;
+    }
+
+    #hud .stat {
+      font-variant-numeric: tabular-nums;
+      min-width: 70px;
+    }
+
+    #hud button {
+      background: #2a2a44;
+      color: #e0e0e0;
+      border: 1px solid #3d3d5c;
+      padding: 5px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      min-height: 32px;
+    }
+    #hud button:hover { background: #3d3d5c; }
+    #hud button.active { background: #4fc3f7; color: #1a1a2e; border-color: #4fc3f7; }
+    #hud button.flag-mode { background: #e94560; color: #fff; border-color: #e94560; }
+
+    #hud label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    #hud input[type=range] {
+      width: 120px;
+      cursor: pointer;
+    }
+
+    #wrapper {
+      flex: 1 1 auto;
+      overflow: auto;
+      background: #0f0f1e;
+      position: relative;
+      touch-action: pan-x pan-y;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    #board {
+      display: block;
+      touch-action: pan-x pan-y;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 15, 30, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+    #overlay h2 {
+      font-size: clamp(2rem, 8vw, 4rem);
+      margin-bottom: 1rem;
+    }
+    #overlay.win h2 { color: #4fc3f7; }
+    #overlay.lose h2 { color: #e94560; }
+    #overlay p { color: #a8d8ea; font-size: 1rem; }
+    #overlay[hidden] { display: none; }
+
+    .hint {
+      color: #667; font-size: 12px; margin-left: auto;
+    }
+
+    @media (max-width: 600px) {
+      #hud { font-size: 13px; gap: 6px; padding: 6px 8px; }
+      #hud button { padding: 8px 10px; font-size: 13px; min-height: 38px; }
+      #hud .stat { min-width: 56px; font-size: 13px; }
+      #hud input[type=range] { width: 70px; }
+      #hud label { font-size: 12px; }
+      .hint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <span class="stat">💣 <span id="mineCount">777</span></span>
+    <span class="stat">⏱ <span id="timer">0</span></span>
+    <button id="newGame">New</button>
+    <button id="modeToggle">タップ: 開く</button>
+    <button id="solverToggle" class="active">Solver: ON</button>
+    <button id="fitBtn">Fit</button>
+    <label>Zoom <input type="range" id="zoom" min="6" max="40" step="1"></label>
+    <span class="hint">クリック: 開く / 右クリック・長押し: 旗 / 2本指: 拡縮</span>
+  </div>
+  <div id="wrapper">
+    <canvas id="board"></canvas>
+  </div>
+  <div id="overlay" hidden>
+    <h2 id="overlayTitle"></h2>
+    <p>タップして閉じる</p>
+  </div>
+
+  <script>
+  // === Constants ===
+  const COLS = 68, ROWS = 48, N = COLS * ROWS, MINES = 777;
+  const TICK_MS = 100;
+  const STATE = { HIDDEN: 0, REVEALED: 1, FLAGGED: 2 };
+  const GAME = { IDLE: 0, PLAYING: 1, WON: 2, LOST: 3 };
+  const NUM_COLORS = ['', '#4fc3f7', '#66bb6a', '#e94560', '#9575cd', '#ffb74d', '#4dd0e1', '#e0e0e0', '#bdbdbd'];
+
+  // === State ===
+  const mines = new Uint8Array(N);
+  const adj   = new Uint8Array(N);
+  const state = new Uint8Array(N);
+  let revealedCount = 0;
+  let flagCount = 0;
+  let gameState = GAME.IDLE;
+  let lossIdx = -1;
+  let startTime = 0;
+  let elapsed = 0;
+  let timerInterval = null;
+  let solverOn = true;
+  let cellPx = 18;
+  let tapMode = 'reveal'; // 'reveal' or 'flag'
+  const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  const MIN_PX = 6, MAX_PX = 40;
+  const MIN_TAP_PX = 22; // minimum cell size for comfortable tapping on touch devices
+
+  // Frontier: revealed numbered cells with >=1 hidden-unflagged neighbor
+  const frontier = new Set();
+  // Confirmed queues + dedupe
+  const safeQueue = [];
+  const mineQueue = [];
+  const queued = new Set(); // idx in any queue, prevents dupes
+
+  // DOM
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  const wrapper = document.getElementById('wrapper');
+  const mineCountEl = document.getElementById('mineCount');
+  const timerEl = document.getElementById('timer');
+  const newGameBtn = document.getElementById('newGame');
+  const solverBtn = document.getElementById('solverToggle');
+  const modeBtn = document.getElementById('modeToggle');
+  const fitBtn = document.getElementById('fitBtn');
+  const zoomEl = document.getElementById('zoom');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+
+  // === Helpers ===
+  function rcOf(idx) { return [Math.floor(idx / COLS), idx % COLS]; }
+  function idxOf(r, c) { return r * COLS + c; }
+
+  // Fill `out` with neighbor indices, return count
+  function neighbors(idx, out) {
+    const r = (idx / COLS) | 0;
+    const c = idx - r * COLS;
+    let n = 0;
+    const r0 = r > 0 ? r - 1 : r;
+    const r1 = r < ROWS - 1 ? r + 1 : r;
+    const c0 = c > 0 ? c - 1 : c;
+    const c1 = c < COLS - 1 ? c + 1 : c;
+    for (let rr = r0; rr <= r1; rr++) {
+      for (let cc = c0; cc <= c1; cc++) {
+        if (rr === r && cc === c) continue;
+        out[n++] = rr * COLS + cc;
+      }
+    }
+    return n;
+  }
+
+  // === Mine placement ===
+  function placeMines(safeIdx) {
+    const forbidden = new Uint8Array(N);
+    forbidden[safeIdx] = 1;
+    const tmp = new Int32Array(8);
+    const k = neighbors(safeIdx, tmp);
+    for (let i = 0; i < k; i++) forbidden[tmp[i]] = 1;
+    const pool = [];
+    for (let i = 0; i < N; i++) if (!forbidden[i]) pool.push(i);
+    // Fisher-Yates partial: pick MINES random from pool
+    for (let i = 0; i < MINES; i++) {
+      const j = i + Math.floor(Math.random() * (pool.length - i));
+      const t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+      mines[pool[i]] = 1;
+    }
+    // Compute adjacency
+    const nbuf = new Int32Array(8);
+    for (let i = 0; i < N; i++) {
+      if (mines[i]) { adj[i] = 0; continue; }
+      const m = neighbors(i, nbuf);
+      let cnt = 0;
+      for (let q = 0; q < m; q++) if (mines[nbuf[q]]) cnt++;
+      adj[i] = cnt;
+    }
+  }
+
+  // === Board ops ===
+  // Reveal returns true if game continues, false if mine hit.
+  // Flood fills zero-cells. Updates frontier.
+  function revealCell(startIdx) {
+    if (state[startIdx] !== STATE.HIDDEN) return true;
+    if (mines[startIdx]) {
+      state[startIdx] = STATE.REVEALED;
+      lossIdx = startIdx;
+      return false;
+    }
+    const stack = [startIdx];
+    const nbuf = new Int32Array(8);
+    while (stack.length) {
+      const idx = stack.pop();
+      if (state[idx] !== STATE.HIDDEN) continue;
+      state[idx] = STATE.REVEALED;
+      revealedCount++;
+      queued.delete(idx); // if previously queued safe, no longer needed
+      // Add to frontier candidacy: if numbered and has hidden neighbor
+      const k = neighbors(idx, nbuf);
+      if (adj[idx] === 0) {
+        for (let i = 0; i < k; i++) {
+          const n = nbuf[i];
+          if (state[n] === STATE.HIDDEN && !mines[n]) stack.push(n);
+        }
+      }
+      // After reveal, evaluate frontier membership for self
+      if (adj[idx] > 0) checkFrontier(idx);
+      // And for revealed numbered neighbors (their hidden-set may have shrunk)
+      for (let i = 0; i < k; i++) {
+        const n = nbuf[i];
+        if (state[n] === STATE.REVEALED && adj[n] > 0) checkFrontier(n);
+      }
+    }
+    return true;
+  }
+
+  function flagCell(idx) {
+    if (state[idx] === STATE.HIDDEN) {
+      state[idx] = STATE.FLAGGED;
+      flagCount++;
+      queued.delete(idx);
+    } else if (state[idx] === STATE.FLAGGED) {
+      state[idx] = STATE.HIDDEN;
+      flagCount--;
+    } else return;
+    // Update frontier for revealed numbered neighbors
+    const nbuf = new Int32Array(8);
+    const k = neighbors(idx, nbuf);
+    for (let i = 0; i < k; i++) {
+      const n = nbuf[i];
+      if (state[n] === STATE.REVEALED && adj[n] > 0) checkFrontier(n);
+    }
+    updateMineCountUI();
+  }
+
+  // checkFrontier: add to frontier if revealed numbered with >=1 hidden-unflagged neighbor; else remove
+  function checkFrontier(idx) {
+    if (state[idx] !== STATE.REVEALED || adj[idx] === 0) {
+      frontier.delete(idx);
+      return;
+    }
+    const nbuf = new Int32Array(8);
+    const k = neighbors(idx, nbuf);
+    let hasHidden = false;
+    for (let i = 0; i < k; i++) {
+      if (state[nbuf[i]] === STATE.HIDDEN) { hasHidden = true; break; }
+    }
+    if (hasHidden) frontier.add(idx);
+    else frontier.delete(idx);
+  }
+
+  // === Solver ===
+  // For a frontier cell, fill `hidden` with hidden-unflagged neighbors and return {len, flagged}
+  function getHidden(idx, hidden) {
+    const nbuf = new Int32Array(8);
+    const k = neighbors(idx, nbuf);
+    let len = 0, flagged = 0;
+    for (let i = 0; i < k; i++) {
+      const n = nbuf[i];
+      const s = state[n];
+      if (s === STATE.HIDDEN) hidden[len++] = n;
+      else if (s === STATE.FLAGGED) flagged++;
+    }
+    return { len, flagged };
+  }
+
+  function pushSafe(idx) {
+    if (state[idx] !== STATE.HIDDEN) return;
+    if (queued.has(idx)) return;
+    queued.add(idx);
+    safeQueue.push(idx);
+  }
+  function pushMine(idx) {
+    if (state[idx] !== STATE.HIDDEN) return;
+    if (queued.has(idx)) return;
+    queued.add(idx);
+    mineQueue.push(idx);
+  }
+
+  function scanBasic() {
+    const hidden = new Int32Array(8);
+    let found = 0;
+    for (const idx of frontier) {
+      const { len, flagged } = getHidden(idx, hidden);
+      if (len === 0) continue;
+      const remaining = adj[idx] - flagged;
+      if (remaining === 0) {
+        for (let i = 0; i < len; i++) { pushSafe(hidden[i]); found++; }
+      } else if (remaining === len) {
+        for (let i = 0; i < len; i++) { pushMine(hidden[i]); found++; }
+      }
+    }
+    return found;
+  }
+
+  // Subset pass: for each pair (A,B) of frontier within Chebyshev distance 2,
+  // if hiddenA ⊂ hiddenB, then diff = hiddenB \ hiddenA, dM = remB - remA.
+  // dM == diff.length => diff are mines; dM == 0 => diff are safe.
+  function scanSubset() {
+    // Precompute hidden sets (sorted) and remaining mine count for frontier cells
+    const cells = []; // { idx, hidden:[] (sorted), rem }
+    const hbuf = new Int32Array(8);
+    for (const idx of frontier) {
+      const { len, flagged } = getHidden(idx, hbuf);
+      if (len === 0) continue;
+      const arr = new Array(len);
+      for (let i = 0; i < len; i++) arr[i] = hbuf[i];
+      arr.sort((a, b) => a - b);
+      cells.push({ idx, hidden: arr, rem: adj[idx] - flagged });
+    }
+    // Index by row,col for quick neighborhood lookup
+    const cellByIdx = new Map();
+    for (const c of cells) cellByIdx.set(c.idx, c);
+    let found = 0;
+    const nbuf = new Int32Array(8);
+    for (const A of cells) {
+      // Build candidate B's: frontier within Chebyshev distance 2 (5x5 around A, excluding A)
+      const ar = (A.idx / COLS) | 0;
+      const ac = A.idx - ar * COLS;
+      const r0 = Math.max(0, ar - 2), r1 = Math.min(ROWS - 1, ar + 2);
+      const c0 = Math.max(0, ac - 2), c1 = Math.min(COLS - 1, ac + 2);
+      for (let rr = r0; rr <= r1; rr++) {
+        for (let cc = c0; cc <= c1; cc++) {
+          const bi = rr * COLS + cc;
+          if (bi === A.idx) continue;
+          const B = cellByIdx.get(bi);
+          if (!B) continue;
+          // Check setA ⊂ setB (strict not required; equal is allowed but yields no info if diff empty)
+          if (A.hidden.length > B.hidden.length) continue;
+          // Linear merge
+          let i = 0, j = 0, ok = true;
+          while (i < A.hidden.length && j < B.hidden.length) {
+            if (A.hidden[i] === B.hidden[j]) { i++; j++; }
+            else if (A.hidden[i] > B.hidden[j]) { j++; }
+            else { ok = false; break; }
+          }
+          if (!ok || i < A.hidden.length) continue;
+          // diff = B \ A
+          const diff = [];
+          let p = 0, q = 0;
+          while (q < B.hidden.length) {
+            if (p < A.hidden.length && A.hidden[p] === B.hidden[q]) { p++; q++; }
+            else { diff.push(B.hidden[q]); q++; }
+          }
+          if (diff.length === 0) continue;
+          const dM = B.rem - A.rem;
+          if (dM === diff.length) {
+            for (const d of diff) { pushMine(d); found++; }
+          } else if (dM === 0) {
+            for (const d of diff) { pushSafe(d); found++; }
+          }
+        }
+      }
+      // Avoid spending all subset budget if we already found stuff
+      if (found > 0) break;
+    }
+    return found;
+  }
+
+  function runScan() {
+    if (gameState !== GAME.PLAYING) return;
+    let found = scanBasic();
+    if (found === 0) scanSubset();
+  }
+
+  // === Auto-open loop ===
+  let tickInterval = null;
+  function tick() {
+    if (gameState !== GAME.PLAYING || !solverOn) return;
+    let mutated = false;
+    // 1) Flag all confirmed mines this tick (visual feedback, fast)
+    while (mineQueue.length) {
+      const idx = mineQueue.shift();
+      if (state[idx] !== STATE.HIDDEN) continue;
+      // Safety assert: solver should only ever flag actual mines
+      if (!mines[idx]) {
+        console.error('Solver bug: tried to flag non-mine', idx);
+        continue;
+      }
+      flagCell(idx);
+      mutated = true;
+    }
+    // 2) Reveal one safe per tick
+    if (safeQueue.length) {
+      let idx = -1;
+      while (safeQueue.length) {
+        const cand = safeQueue.shift();
+        if (state[cand] === STATE.HIDDEN) { idx = cand; break; }
+      }
+      if (idx >= 0) {
+        if (mines[idx]) {
+          console.error('Solver bug: tried to reveal mine', idx);
+          return;
+        }
+        revealCell(idx);
+        mutated = true;
+        if (revealedCount === N - MINES) { winGame(); return; }
+      }
+    }
+    if (mutated) {
+      runScan();
+      scheduleDraw();
+      updateMineCountUI();
+    }
+  }
+
+  // === Render ===
+  let drawScheduled = false;
+  function scheduleDraw() {
+    if (drawScheduled) return;
+    drawScheduled = true;
+    requestAnimationFrame(() => {
+      drawScheduled = false;
+      draw();
+    });
+  }
+
+  function resizeCanvas() {
+    const w = COLS * cellPx;
+    const h = ROWS * cellPx;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    scheduleDraw();
+  }
+
+  function draw() {
+    const w = COLS * cellPx;
+    const h = ROWS * cellPx;
+    ctx.fillStyle = '#0f0f1e';
+    ctx.fillRect(0, 0, w, h);
+    const fontSize = Math.max(8, Math.floor(cellPx * 0.7));
+    ctx.font = 'bold ' + fontSize + 'px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const gap = cellPx >= 14 ? 1 : 0;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const idx = r * COLS + c;
+        const x = c * cellPx;
+        const y = r * cellPx;
+        const s = state[idx];
+        let fill;
+        if (gameState === GAME.LOST && idx === lossIdx) fill = '#e94560';
+        else if (gameState === GAME.LOST && mines[idx] && s !== STATE.FLAGGED) fill = '#3a1f2a';
+        else if (s === STATE.REVEALED) fill = '#2a2a44';
+        else fill = '#3d3d5c';
+        ctx.fillStyle = fill;
+        ctx.fillRect(x + gap, y + gap, cellPx - gap * 2, cellPx - gap * 2);
+
+        if (s === STATE.REVEALED && adj[idx] > 0 && !mines[idx]) {
+          ctx.fillStyle = NUM_COLORS[adj[idx]];
+          ctx.fillText(String(adj[idx]), x + cellPx / 2, y + cellPx / 2 + 1);
+        } else if (s === STATE.FLAGGED) {
+          drawFlag(x, y);
+        } else if (gameState === GAME.LOST && mines[idx] && s !== STATE.FLAGGED) {
+          drawMine(x, y);
+        }
+      }
+    }
+  }
+
+  function drawFlag(x, y) {
+    const u = cellPx;
+    ctx.fillStyle = '#e94560';
+    ctx.beginPath();
+    ctx.moveTo(x + u * 0.35, y + u * 0.25);
+    ctx.lineTo(x + u * 0.7, y + u * 0.4);
+    ctx.lineTo(x + u * 0.35, y + u * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#bdbdbd';
+    ctx.lineWidth = Math.max(1, u * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(x + u * 0.35, y + u * 0.2);
+    ctx.lineTo(x + u * 0.35, y + u * 0.8);
+    ctx.stroke();
+  }
+
+  function drawMine(x, y) {
+    const u = cellPx;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.beginPath();
+    ctx.arc(x + u / 2, y + u / 2, u * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // === UI updates ===
+  function updateMineCountUI() {
+    mineCountEl.textContent = (MINES - flagCount);
+  }
+  function updateTimerUI() {
+    timerEl.textContent = elapsed;
+  }
+
+  // === Game lifecycle ===
+  function newGame() {
+    mines.fill(0);
+    adj.fill(0);
+    state.fill(0);
+    revealedCount = 0;
+    flagCount = 0;
+    lossIdx = -1;
+    gameState = GAME.IDLE;
+    frontier.clear();
+    safeQueue.length = 0;
+    mineQueue.length = 0;
+    queued.clear();
+    elapsed = 0;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    overlay.hidden = true;
+    overlay.classList.remove('win', 'lose');
+    updateMineCountUI();
+    updateTimerUI();
+    defaultZoom();
+    scheduleDraw();
+  }
+
+  function startTimer() {
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+      if (gameState !== GAME.PLAYING) return;
+      elapsed = Math.floor((Date.now() - startTime) / 1000);
+      updateTimerUI();
+    }, 250);
+  }
+
+  function loseGame() {
+    gameState = GAME.LOST;
+    overlayTitle.textContent = 'Game Over';
+    overlay.classList.add('lose');
+    overlay.hidden = false;
+    scheduleDraw();
+  }
+
+  function winGame() {
+    gameState = GAME.WON;
+    overlayTitle.textContent = 'You Win!';
+    overlay.classList.add('win');
+    overlay.hidden = false;
+    scheduleDraw();
+  }
+
+  // === Input ===
+  function eventToCell(ev) {
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+    if (x < 0 || y < 0) return -1;
+    const c = Math.floor(x / cellPx);
+    const r = Math.floor(y / cellPx);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return -1;
+    return r * COLS + c;
+  }
+
+  function userReveal(idx) {
+    if (gameState === GAME.WON || gameState === GAME.LOST) return;
+    if (state[idx] === STATE.FLAGGED) return;
+    if (state[idx] === STATE.REVEALED) return;
+    if (gameState === GAME.IDLE) {
+      placeMines(idx);
+      gameState = GAME.PLAYING;
+      startTimer();
+    }
+    const ok = revealCell(idx);
+    if (!ok) {
+      loseGame();
+      return;
+    }
+    if (revealedCount === N - MINES) { winGame(); return; }
+    runScan();
+    updateMineCountUI();
+    scheduleDraw();
+  }
+
+  function userFlag(idx) {
+    if (gameState !== GAME.PLAYING && gameState !== GAME.IDLE) return;
+    if (gameState === GAME.IDLE) return; // can't flag before any mines exist
+    if (state[idx] === STATE.REVEALED) return;
+    flagCell(idx);
+    runScan();
+    scheduleDraw();
+  }
+
+  // Mouse: respect tapMode for the primary button (so Flag mode users can left-click to flag).
+  // contextmenu always flags (right-click intuition). When tapMode==='flag', left-click flags
+  // and right-click also flags — that's fine.
+  let touchHandled = false; // suppress synthetic click after touch was already processed
+
+  canvas.addEventListener('click', (ev) => {
+    if (touchHandled) { return; }
+    const idx = eventToCell(ev);
+    if (idx < 0) return;
+    // IDLE: first action must reveal (can't flag before mines exist)
+    if (gameState === GAME.IDLE) { userReveal(idx); return; }
+    if (tapMode === 'flag') userFlag(idx);
+    else userReveal(idx);
+  });
+
+  canvas.addEventListener('contextmenu', (ev) => {
+    ev.preventDefault();
+    const idx = eventToCell(ev);
+    if (idx < 0) return;
+    // Right-click always toggles flag. If in flag mode, behaves as reveal (opposite of tap).
+    if (tapMode === 'flag') userReveal(idx);
+    else userFlag(idx);
+  });
+
+  // === Touch: tap (mode-aware) + long-press (opposite action) + pinch-zoom + native pan-scroll ===
+  const pointers = new Map(); // id -> {x, y, startX, startY, startTime, cellIdx}
+  let longPressTimer = null;
+  let gestureConsumed = false; // once true, no tap fires until all fingers lift
+  let pinch = null; // {d0, cellPx0, cellAtMidX, cellAtMidY}
+  const LONG_PRESS_MS = 450;
+  const TOUCH_MOVE_TOL = 10;
+
+  function pointerToCell(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const px = clientX - rect.left, py = clientY - rect.top;
+    if (px < 0 || py < 0) return -1;
+    const c = Math.floor(px / cellPx), r = Math.floor(py / cellPx);
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return -1;
+    return r * COLS + c;
+  }
+
+  function startPinch() {
+    const arr = Array.from(pointers.values());
+    if (arr.length < 2) return;
+    const a = arr[0], b = arr[1];
+    const d0 = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const wrect = wrapper.getBoundingClientRect();
+    const boardX = mx - wrect.left + wrapper.scrollLeft;
+    const boardY = my - wrect.top + wrapper.scrollTop;
+    pinch = {
+      d0, cellPx0: cellPx,
+      cellAtMidX: boardX / cellPx,
+      cellAtMidY: boardY / cellPx,
+    };
+  }
+
+  function updatePinch() {
+    if (!pinch || pointers.size < 2) return;
+    const arr = Array.from(pointers.values()).slice(0, 2);
+    const a = arr[0], b = arr[1];
+    const d1 = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    let newPx = Math.round(pinch.cellPx0 * (d1 / pinch.d0));
+    newPx = Math.max(MIN_PX, Math.min(MAX_PX, newPx));
+    if (newPx !== cellPx) {
+      cellPx = newPx;
+      zoomEl.value = newPx;
+      resizeCanvas();
+    }
+    const wrect = wrapper.getBoundingClientRect();
+    wrapper.scrollLeft = pinch.cellAtMidX * cellPx - (mx - wrect.left);
+    wrapper.scrollTop  = pinch.cellAtMidY * cellPx - (my - wrect.top);
+  }
+
+  canvas.addEventListener('touchstart', (ev) => {
+    for (const t of ev.changedTouches) {
+      pointers.set(t.identifier, {
+        x: t.clientX, y: t.clientY,
+        startX: t.clientX, startY: t.clientY,
+        startTime: Date.now(),
+        cellIdx: pointerToCell(t.clientX, t.clientY),
+      });
+    }
+    if (pointers.size === 1 && !gestureConsumed) {
+      if (longPressTimer) { clearTimeout(longPressTimer); }
+      const p = pointers.values().next().value;
+      const cellIdx = p.cellIdx;
+      if (cellIdx >= 0) {
+        const oppositeAction = tapMode === 'reveal' ? userFlag : userReveal;
+        longPressTimer = setTimeout(() => {
+          longPressTimer = null;
+          if (pointers.size === 1 && !gestureConsumed) {
+            touchHandled = true;
+            gestureConsumed = true;
+            oppositeAction(cellIdx);
+          }
+        }, LONG_PRESS_MS);
+      }
+    } else if (pointers.size === 2) {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      gestureConsumed = true;
+      startPinch();
+      ev.preventDefault();
+    } else {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+      gestureConsumed = true;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', (ev) => {
+    for (const t of ev.changedTouches) {
+      const p = pointers.get(t.identifier);
+      if (!p) continue;
+      p.x = t.clientX; p.y = t.clientY;
+    }
+    if (pointers.size === 1 && !gestureConsumed) {
+      const p = pointers.values().next().value;
+      if (Math.abs(p.x - p.startX) > TOUCH_MOVE_TOL || Math.abs(p.y - p.startY) > TOUCH_MOVE_TOL) {
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+        gestureConsumed = true; // becomes a scroll/drag; no tap will fire
+      }
+    } else if (pointers.size >= 2 && pinch) {
+      ev.preventDefault();
+      updatePinch();
+    }
+  }, { passive: false });
+
+  function endPointer(t) {
+    const p = pointers.get(t.identifier);
+    if (!p) return;
+    const wasTap = pointers.size === 1 && !gestureConsumed && longPressTimer != null;
+    pointers.delete(t.identifier);
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    if (wasTap && p.cellIdx >= 0) {
+      touchHandled = true;
+      // IDLE: first tap always reveals
+      if (gameState === GAME.IDLE) {
+        userReveal(p.cellIdx);
+      } else {
+        const action = tapMode === 'reveal' ? userReveal : userFlag;
+        action(p.cellIdx);
+      }
+      setTimeout(() => { touchHandled = false; }, 60);
+    }
+    if (pointers.size === 0) {
+      gestureConsumed = false;
+      pinch = null;
+    } else if (pointers.size === 1 && pinch) {
+      pinch = null; // exited pinch; remaining finger should not fire tap (gestureConsumed still true)
+    }
+  }
+
+  canvas.addEventListener('touchend', (ev) => {
+    for (const t of ev.changedTouches) endPointer(t);
+  });
+  canvas.addEventListener('touchcancel', (ev) => {
+    for (const t of ev.changedTouches) endPointer(t);
+  });
+
+  // HUD
+  newGameBtn.addEventListener('click', newGame);
+  solverBtn.addEventListener('click', () => {
+    solverOn = !solverOn;
+    solverBtn.textContent = 'Solver: ' + (solverOn ? 'ON' : 'OFF');
+    solverBtn.classList.toggle('active', solverOn);
+    if (solverOn && gameState === GAME.PLAYING) runScan();
+  });
+
+  function setTapMode(m) {
+    tapMode = m;
+    modeBtn.textContent = m === 'reveal' ? 'タップ: 開く' : 'タップ: 旗 🚩';
+    modeBtn.classList.toggle('flag-mode', m === 'flag');
+  }
+  modeBtn.addEventListener('click', () => {
+    setTapMode(tapMode === 'reveal' ? 'flag' : 'reveal');
+  });
+
+  function applyZoom(newPx, anchorX, anchorY) {
+    newPx = Math.max(MIN_PX, Math.min(MAX_PX, newPx | 0));
+    if (newPx === cellPx) return;
+    // Anchor: keep the board point under (anchorX, anchorY) in viewport coords stable
+    const wrect = wrapper.getBoundingClientRect();
+    const ax = anchorX != null ? anchorX : wrect.width / 2;
+    const ay = anchorY != null ? anchorY : wrect.height / 2;
+    const cellAtAx = (wrapper.scrollLeft + ax) / cellPx;
+    const cellAtAy = (wrapper.scrollTop + ay) / cellPx;
+    cellPx = newPx;
+    zoomEl.value = newPx;
+    resizeCanvas();
+    wrapper.scrollLeft = cellAtAx * cellPx - ax;
+    wrapper.scrollTop = cellAtAy * cellPx - ay;
+  }
+
+  zoomEl.addEventListener('input', () => {
+    applyZoom(parseInt(zoomEl.value, 10), null, null);
+  });
+
+  fitBtn.addEventListener('click', () => fitToScreen());
+
+  // Overlay click → new game
+  overlay.addEventListener('click', newGame);
+
+  // True fit-to-viewport (cells may become tiny — for overview)
+  function fitToScreen() {
+    const ww = wrapper.clientWidth || window.innerWidth;
+    const wh = wrapper.clientHeight || (window.innerHeight - 60);
+    const px = Math.max(MIN_PX, Math.min(MAX_PX, Math.floor(Math.min(ww / COLS, wh / ROWS))));
+    cellPx = px;
+    zoomEl.value = px;
+    resizeCanvas();
+    wrapper.scrollLeft = 0;
+    wrapper.scrollTop = 0;
+  }
+
+  // Initial zoom on new game: comfortable on touch (scrolling OK), fit on desktop
+  function defaultZoom() {
+    const ww = wrapper.clientWidth || window.innerWidth;
+    const wh = wrapper.clientHeight || (window.innerHeight - 60);
+    const fit = Math.floor(Math.min(ww / COLS, wh / ROWS));
+    const px = isTouchDevice
+      ? Math.max(MIN_TAP_PX, Math.min(MAX_PX, fit))
+      : Math.max(MIN_PX, Math.min(MAX_PX, fit));
+    cellPx = px;
+    zoomEl.value = px;
+    resizeCanvas();
+    wrapper.scrollLeft = 0;
+    wrapper.scrollTop = 0;
+  }
+
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+  });
+
+  // === Init ===
+  zoomEl.min = MIN_PX; zoomEl.max = MAX_PX; zoomEl.step = 1;
+  setTapMode('reveal');
+  newGame();
+  tickInterval = setInterval(tick, TICK_MS);
+  </script>
+</body>
+</html>
