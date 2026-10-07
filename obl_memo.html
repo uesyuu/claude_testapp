@@ -22,6 +22,11 @@ main > ul { padding-left:0; }
 li ul { margin:6px 0 0; }
 li ul li { color:var(--fg); }
 em { color:var(--accent); font-style:normal; }
+.scr { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:6px 0 2px; }
+.scr-label { font-size:.75rem; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 6px; }
+.scr code { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.95rem; background:var(--chip); color:var(--fg); padding:2px 10px; border-radius:6px; }
+.copy { font:inherit; font-size:.75rem; color:var(--accent); background:transparent; border:1px solid var(--line); border-radius:4px; padding:0 8px; cursor:pointer; }
+.copy.done { color:var(--muted); }
 .note { color:var(--muted); margin-top:-4px; }
 </style>
 </head>
@@ -39,91 +44,100 @@ em { color:var(--accent); font-style:normal; }
 </ul>
 <h2 id="s2">2スライス（4ケース）</h2>
 <ul>
-<li>Copps - ブロックを崩さず、コーナーをM2</li>
-<li>Good pairs - 両方のPairを崩さずに保てる場合。COと同じように解く</li>
-<li>Good thumbs/thumb - Gemを上段、エッジを下段に持ったとき、それらが同じ側（LLまたはRR）にあればGood。U2またはD2を行い、Gemを保つ。<em>ThumbのGem（握りこぶし部分）がある段でFを行う</em></li>
-<li>Good Ns - 2つを上下に重ねて持つ</li>
-<li>Bad Ns: Good Nsと同じ手順のあとM2を行う</li>
+<li>Copps - ブロックを崩さず、コーナーをM2 <span class="scr"><span class="scr-label">スクランブル</span><code>10 m 01</code><button type="button" class="copy" data-s="10 m 01" aria-label="コピー">コピー</button></span></li>
+<li>Good pairs - 両方のPairを崩さずに保てる場合。COと同じように解く <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; -10</code><button type="button" class="copy" data-s="10 D&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Good thumbs/thumb - Gemを上段、エッジを下段に持ったとき、それらが同じ側（LLまたはRR）にあればGood。U2またはD2を行い、Gemを保つ。<em>ThumbのGem（握りこぶし部分）がある段でFを行う</em> <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 F -10</code><button type="button" class="copy" data-s="0-1 F -10" aria-label="コピー">コピー</button></span></li>
+<li>Good Ns - 2つを上下に重ねて持つ <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 e 01</code><button type="button" class="copy" data-s="0-1 e 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad Ns: Good Nsと同じ手順のあとM2を行う <span class="scr"><span class="scr-label">スクランブル</span><code>10 M&#x27; u&#x27; e&#x27; -10</code><button type="button" class="copy" data-s="10 M&#x27; u&#x27; e&#x27; -10" aria-label="コピー">コピー</button></span></li>
 </ul>
 <h2 id="s3">3スライス（13ケース）</h2>
 <ul>
-<li>Good pair/arrow - Arrowのどのピースにも触れずにPairとArrowを分けられればGood。そこでスライスする。<em>Arrowの羽根（feather）が移った段でFを行う</em></li>
-<li>Good arrows - 常にコーナーを右上に持ち、スライス線に接するようにする</li>
-<li>Bad arrows - コーナーの持ち方は同じ。片方のArrowを立てて右側に置き、<em>下にないほうのArrowのエッジを（その面の）下へ持ってくる。</em> 2手目はエッジを動かした面を同方向に2回すu</li>
-<li>Gem/axe - Gemと擬似ブロックを入れ替える。<em>「1」が元のGemの段に来るように小さいムーブを行う</em></li>
-<li>Good Knight/axe - コーナーを上、エッジを下にして持つ。これがこのケースの「立てた状態（upright position）」で、基本の持ち方にすること。この状態にしたときに両者が同じ側（RR/LL）にあればGood knight/axe。Goodなら、Knightの隣接エッジをキューブの反対半分へ移してコーナーから切り離し、それに合わせてAxeをずらすだけでよい。<em>ハンマーの刃（blade）が移った段で3ムーブを行い、スライス線の同じ側に来るようにする</em></li>
-<li><em>Bad knight/axe は M2。</em> 3手目はKnightの面を2回すu、M2の位置によってはU</li>
-<li>Good bunnies - Bunnyを立てて持つ。もう一方のBunnyも同じ位置に置き、スライス線に接していればGood。スライスする。<em>EまたはE'を行う</em></li>
-<li>Yoshi/shell - YoshiにあるEC（エッジ・コーナー）ペアが作る擬似ラインを見つけ、それを保つ（基本はCOだが一部のブロックを保つ）。特にYoshiのGemを保つこと。2手目はShellの面を2回すu</li>
-<li>Good Yoshi/Bird - Pairが保たれるようにGemを右に置く。Birdを右に置いたとき、（Yoshiは動かさずに）Birdを保てなければGood（左側でも可）。<em>Gemと同じ色のPairをスライス線の反対側へ移す</em></li>
-<li>Bad bird/yoshi: Birdが保たれるならBad。そこでスライスし、<em>小さいmを行う。</em> 3手目はYoshiの面を2回すu</li>
-<li>Good kite/cut - スライス線に接せない場合Good。Cutの孤立エッジをKiteのエッジの真上に持ってきてM2</li>
-<li>Good kite/N - すべてのブロックを保てるならCO</li>
-<li>Good Ts - 互いに同じ色。1回スライスしてM2へ（どちらの位置でもよいので最善の解き方になるよう調整する）</li>
-<li>Bad Ts - 10 u M など</li>
-<li>Good T/Tie - TieがTと同じ色。Tieの結び目（knot）をTreeの幹（trunk）の隣に持ってくる（Treeは幹を左にして横向きに持つ）。<em>今持ってきた結び目の「方へ」Treeの幹を小さいムーブで寄せる（要するに、TieのGemとTのエッジでThumbを作る）</em></li>
-<li>Bad T/Tie - TieがTと反対の色。最初の2回のスライスはGood T/Tieと同じ。3手目はTieの方を2回すT</li>
-<li>Good cuts - 両方の段でスライス線に接することができれば、1回スライスでCOしてM2へ</li>
-<li>Good Ties - 同じ色。上をFL、下をFRに置く。<em>DまたはD'を行いM2へ</em></li>
-<li>Bad ties - 10 u M など</li>
+<li>Good pair/arrow - Arrowのどのピースにも触れずにPairとArrowを分けられればGood。そこでスライスする。<em>Arrowの羽根（feather）が移った段でFを行う</em> <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; F -10</code><button type="button" class="copy" data-s="10 F&#x27; F -10" aria-label="コピー">コピー</button></span></li>
+<li>Good arrows - 常にコーナーを右上に持ち、スライス線に接するようにする <span class="scr"><span class="scr-label">スクランブル</span><code>10 u E&#x27; 01</code><button type="button" class="copy" data-s="10 u E&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad arrows - コーナーの持ち方は同じ。片方のArrowを立てて右側に置き、<em>下にないほうのArrowのエッジを（その面の）下へ持ってくる。</em> 2手目はエッジを動かした面を同方向に2回すu <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U&#x27; F D&#x27; -10</code><button type="button" class="copy" data-s="0-1 U&#x27; F D&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Gem/axe - Gemと擬似ブロックを入れ替える。<em>「1」が元のGemの段に来るように小さいムーブを行う</em> <span class="scr"><span class="scr-label">スクランブル</span><code>10 u U&#x27; 01</code><button type="button" class="copy" data-s="10 u U&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Good Knight/axe - コーナーを上、エッジを下にして持つ。これがこのケースの「立てた状態（upright position）」で、基本の持ち方にすること。この状態にしたときに両者が同じ側（RR/LL）にあればGood knight/axe。Goodなら、Knightの隣接エッジをキューブの反対半分へ移してコーナーから切り離し、それに合わせてAxeをずらすだけでよい。<em>ハンマーの刃（blade）が移った段で3ムーブを行い、スライス線の同じ側に来るようにする</em> <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 F D&#x27; -10</code><button type="button" class="copy" data-s="0-1 F D&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li><em>Bad knight/axe は M2。</em> 3手目はKnightの面を2回すu、M2の位置によってはU <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; D&#x27; d 01</code><button type="button" class="copy" data-s="10 D&#x27; D&#x27; d 01" aria-label="コピー">コピー</button></span></li>
+<li>Good bunnies - Bunnyを立てて持つ。もう一方のBunnyも同じ位置に置き、スライス線に接していればGood。スライスする。<em>EまたはE'を行う</em> <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f E -10</code><button type="button" class="copy" data-s="0-1 f E -10" aria-label="コピー">コピー</button></span></li>
+<li>Yoshi/shell - YoshiにあるEC（エッジ・コーナー）ペアが作る擬似ラインを見つけ、それを保つ（基本はCOだが一部のブロックを保つ）。特にYoshiのGemを保つこと。2手目はShellの面を2回すu <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U F -10</code><button type="button" class="copy" data-s="0-1 U F -10" aria-label="コピー">コピー</button></span></li>
+<li>Good Yoshi/Bird - Pairが保たれるようにGemを右に置く。Birdを右に置いたとき、（Yoshiは動かさずに）Birdを保てなければGood（左側でも可）。<em>Gemと同じ色のPairをスライス線の反対側へ移す</em> <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; U&#x27; 01</code><button type="button" class="copy" data-s="10 F&#x27; U&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad bird/yoshi: Birdが保たれるならBad。そこでスライスし、<em>小さいmを行う。</em> 3手目はYoshiの面を2回すu <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; D&#x27; u 01</code><button type="button" class="copy" data-s="10 D&#x27; D&#x27; u 01" aria-label="コピー">コピー</button></span></li>
+<li>Good kite/cut - スライス線に接せない場合Good。Cutの孤立エッジをKiteのエッジの真上に持ってきてM2 <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 D M -10</code><button type="button" class="copy" data-s="0-1 D M -10" aria-label="コピー">コピー</button></span></li>
+<li>Good kite/N - すべてのブロックを保てるならCO <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U&#x27; U&#x27; 01</code><button type="button" class="copy" data-s="0-1 U&#x27; U&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Good Ts - 互いに同じ色。1回スライスしてM2へ（どちらの位置でもよいので最善の解き方になるよう調整する） <span class="scr"><span class="scr-label">スクランブル</span><code>10 M&#x27; u&#x27; -10</code><button type="button" class="copy" data-s="10 M&#x27; u&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Bad Ts - 10 u M など <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; M&#x27; d&#x27; -10</code><button type="button" class="copy" data-s="10 D&#x27; M&#x27; d&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Good T/Tie - TieがTと同じ色。Tieの結び目（knot）をTreeの幹（trunk）の隣に持ってくる（Treeは幹を左にして横向きに持つ）。<em>今持ってきた結び目の「方へ」Treeの幹を小さいムーブで寄せる（要するに、TieのGemとTのエッジでThumbを作る）</em> <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 -5-2 d 01</code><button type="button" class="copy" data-s="0-1 -5-2 d 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad T/Tie - TieがTと反対の色。最初の2回のスライスはGood T/Tieと同じ。3手目はTieの方を2回すT <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; 4-2 U -10</code><button type="button" class="copy" data-s="10 F&#x27; 4-2 U -10" aria-label="コピー">コピー</button></span></li>
+<li>Good cuts - 両方の段でスライス線に接することができれば、1回スライスでCOしてM2へ <span class="scr"><span class="scr-label">スクランブル</span><code>10 M&#x27; m&#x27; -10</code><button type="button" class="copy" data-s="10 M&#x27; m&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Good Ties - 同じ色。上をFL、下をFRに置く。<em>DまたはD'を行いM2へ</em> <span class="scr"><span class="scr-label">スクランブル</span><code>10 m D 01</code><button type="button" class="copy" data-s="10 m D 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad ties - 10 u M など <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 D M U&#x27;D2 -10</code><button type="button" class="copy" data-s="0-1 D M U&#x27;D2 -10" aria-label="コピー">コピー</button></span></li>
 </ul>
 <h2 id="s4">4スライス（30ケース）</h2>
 <p class="note">無理のない範囲でワンルック（onelook）を教える</p>
 
 <ul>
-<li>cadjs - 上のコーナーを左、下のコーナーを右に。10 F' M F'</li>
-<li>Bad pairs - Pair同士をできるだけくっつけて（どちら向きでもよい）擬似Shellを作り、擬似Shellを保つ小さいムーブを行う。3手目は疑似Shellを作った面を2回すu、2戻すイメージ</li>
-<li>Bad pair/arrow: PairとArrowを分けられない場合、両方を右へ移し（両方のコーナーが似た位置にあり、Arrowが立った状態であることを確認）、（元の）Pairの段でFを行い、続けて同じ段で同じ方向に90度ムーブを行う</li>
-<li>Gems - 上のGemを左手前、下のGemを右奥に。F' u' U'</li>
-<li>Gem/Knight - Knightを立てて持ち、Gemも似た位置に置く。Gemを保ちつつKnightの頭を追跡し、スライス線をまたがせる。3手目はGemがある面を4回すF</li>
-<li>Gem/Squid - COを行うが、Gemは保たない</li>
-<li>LR と RL Knights: 立てて持ち、反対側にあればGood。その位置から上段をずらし、左側にあるほうのKnightをスライス線の向こうへ移し、続けて同じ方向に小さいムーブを行う</li>
-<li>RR と LL: 立てて持ち、同じ側にあればBad。上のKnightを段の上側に置き（上段をずらす）、F' m D'。Rightは3手目がm、Leftは3手目以降CO手順</li>
-<li>Knight/Squid - Knightを立て、Squidの頭をKnightのコーナーと似た位置に置く。Squidの頭を追跡してスライス線をまたがせる。3手目はKnightがある面を1回すF</li>
-<li>Axe/Squid - Axeを立て、Squidの頭を上段かつスライス線の反対端に置く。Squidの頭を追跡してスライス線をまたがせる。3手目はAxeの刃がある方を1回すu</li>
-<li>Good thumb/bunny - BunnyのKnight部分を完全に左側に置き、次にThumbを左側で立ててGemを保てるか試す。保てるならThumbの段でFを行う。3手目は2手目でGemを4回した方を4戻すT</li>
-<li>Bad thumb/bunny - 保てない場合、Gemを保ち（Thumbは横向きに持つ）、Knightを左側のもう一方の位置に移し、BunnyのKnightの頭がスライス線をまたぐようにWまたはBを行う</li>
-<li>Shell/Shell - 下のShellを左に置き、上のShellの2ピースを上のShellと組み合わせ（/スライス/）、F' d'</li>
-<li>Shell/Bird - ShellをBirdの孤立コーナー＋Birdの中央エッジと組み合わせ、Birdのコーナーを追跡して、それが移った段でFを行う。3手目は羽が飛んでいった先の面を1回すF</li>
-<li>Shell/Hazard - 逆Shellと本物のHazardを手前に持ってくる。10 u U' m'。3手目はHazardがあった面をU or D</li>
-<li>Good birds - 常に上のBirdを左に置き、下のBirdからPairを持ってくる。このとき上のBirdはスライス線の隣に置く。孤立コーナーと合わさるならGood、上のPairと合わさるならBad。Good: 上のBirdのPairをスライス線の向こうへ移し、続けて同じ方向に小さいムーブ</li>
-<li>bad birds: 同じく上のPairをスライス線の向こうへ移し、その後M。4手目はd</li>
-<li>Bird/Hazard - Birdを左に置き、逆HazardをBirdのエッジと組み合わせ、Hazardをスライス線の向こうへ移す。3手目はBirdの面を4回すF</li>
-<li>Hazard/yoshi - HazardのコーナーをYoshiのコーナー・エッジペアと組み合わせ、任意のtまたはTムーブを行う。3手目はu</li>
-<li>Kite/T - Tと同じ色のKiteを左に置き、Tのエッジを右のKiteのエッジの真上／真下に置く。Kiteからエッジを1つ切り離し、3ムーブでKiteの残りをそのエッジの方へ寄せ、続けて同じ方向に小さいムーブ</li>
-<li>Bad Kite/N: 常にKiteを保つ（上下に持つ。どこで持つかは問わない）。Kiteが揃っていればe、ずれていればe'。<em>その後は必ず上段でFを行う</em></li>
-<li>Kite/Tie: Tieの結び目と同じ色のKiteのPairで、外側のエッジがあるものを右に置き、Gemを左で保つ。スライスし、Gemを保つ小さいムーブを行い、その後交互ムーブ（alternating move）を行う</li>
-<li>Cut/T - Tの色のCutを左に置き、Treeのエッジを Cutのエッジの真下／真上に置く（T/Kiteと同様）。Cutのピースをできるだけ多く保ち、Cutの段でF、続けてCutの段で同じ方向にU</li>
-<li>Good Cut/N - どちらかのKiteを左に持ち、NのPairを持ってきてCutの隣接エッジと入れ替える。必ずCutのエッジ2つとも取ること。Nがスライス線に接していなければGood。Good: Nの段でFを行い、その後大きいEまたはE'</li>
-<li>bad: 同じ手順だが、まず小さいeを行い、上／下に持ってきたNがスライス線をまたぐようにする（追跡する）。その後は同じ手順（Nの段でF、E*）</li>
-<li>Cut/tie - Tieの結び目の2/3を、Cutの孤立コーナー＋エッジと組み合わせる。Tieと同じ色のCutを段の上側に置き、Tieの結び目を追跡し、最初のスライス後にそれがある段でFを行う。3手目はTieの結び目のコーナーが元々あった位置に戻すイメージ</li>
+<li>cadjs - 上のコーナーを左、下のコーナーを右に。10 F' M F' <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; M F&#x27; 01</code><button type="button" class="copy" data-s="10 F&#x27; M F&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad pairs - Pair同士をできるだけくっつけて（どちら向きでもよい）擬似Shellを作り、擬似Shellを保つ小さいムーブを行う。3手目は疑似Shellを作った面を2回すu、2戻すイメージ <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U F u 01</code><button type="button" class="copy" data-s="0-1 U F u 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad pair/arrow: PairとArrowを分けられない場合、両方を右へ移し（両方のコーナーが似た位置にあり、Arrowが立った状態であることを確認）、（元の）Pairの段でFを行い、続けて同じ段で同じ方向に90度ムーブを行う <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 -2-5 U&#x27; F&#x27; 01</code><button type="button" class="copy" data-s="0-1 -2-5 U&#x27; F&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Gems - 上のGemを左手前、下のGemを右奥に。F' u' U' <span class="scr"><span class="scr-label">スクランブル</span><code>10 U u F -10</code><button type="button" class="copy" data-s="10 U u F -10" aria-label="コピー">コピー</button></span></li>
+<li>Gem/Knight - Knightを立てて持ち、Gemも似た位置に置く。Gemを保ちつつKnightの頭を追跡し、スライス線をまたがせる。3手目はGemがある面を4回すF <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; F U -10</code><button type="button" class="copy" data-s="10 F&#x27; F U -10" aria-label="コピー">コピー</button></span></li>
+<li>Gem/Squid - COを行うが、Gemは保たない <span class="scr"><span class="scr-label">スクランブル</span><code>10 M&#x27; U U 01</code><button type="button" class="copy" data-s="10 M&#x27; U U 01" aria-label="コピー">コピー</button></span></li>
+<li>LR と RL Knights: 立てて持ち、反対側にあればGood。その位置から上段をずらし、左側にあるほうのKnightをスライス線の向こうへ移し、続けて同じ方向に小さいムーブを行う <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 M D&#x27; U -10</code><button type="button" class="copy" data-s="0-1 M D&#x27; U -10" aria-label="コピー">コピー</button></span></li>
+<li>RR と LL: 立てて持ち、同じ側にあればBad。上のKnightを段の上側に置き（上段をずらす）、F' m D'。Rightは3手目がm、Leftは3手目以降CO手順 <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U U -24 f&#x27; 01</code><button type="button" class="copy" data-s="0-1 U U -24 f&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Knight/Squid - Knightを立て、Squidの頭をKnightのコーナーと似た位置に置く。Squidの頭を追跡してスライス線をまたがせる。3手目はKnightがある面を1回すF <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f f&#x27; U 01</code><button type="button" class="copy" data-s="0-1 f f&#x27; U 01" aria-label="コピー">コピー</button></span></li>
+<li>Axe/Squid - Axeを立て、Squidの頭を上段かつスライス線の反対端に置く。Squidの頭を追跡してスライス線をまたがせる。3手目はAxeの刃がある方を1回すu <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; d&#x27; u2 01</code><button type="button" class="copy" data-s="10 F&#x27; d&#x27; u2 01" aria-label="コピー">コピー</button></span></li>
+<li>Good thumb/bunny - BunnyのKnight部分を完全に左側に置き、次にThumbを左側で立ててGemを保てるか試す。保てるならThumbの段でFを行う。3手目は2手目でGemを4回した方を4戻すT <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f 2-4 U 01</code><button type="button" class="copy" data-s="0-1 f 2-4 U 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad thumb/bunny - 保てない場合、Gemを保ち（Thumbは横向きに持つ）、Knightを左側のもう一方の位置に移し、BunnyのKnightの頭がスライス線をまたぐようにWまたはBを行う <span class="scr"><span class="scr-label">スクランブル</span><code>10 f&#x27; D U&#x27; 01</code><button type="button" class="copy" data-s="10 f&#x27; D U&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Shell/Shell - 下のShellを左に置き、上のShellの2ピースを上のShellと組み合わせ（/スライス/）、F' d' <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; d -2-5 -10</code><button type="button" class="copy" data-s="10 D&#x27; d -2-5 -10" aria-label="コピー">コピー</button></span></li>
+<li>Shell/Bird - ShellをBirdの孤立コーナー＋Birdの中央エッジと組み合わせ、Birdのコーナーを追跡して、それが移った段でFを行う。3手目は羽が飛んでいった先の面を1回すF <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f f&#x27; f -10</code><button type="button" class="copy" data-s="0-1 f f&#x27; f -10" aria-label="コピー">コピー</button></span></li>
+<li>Shell/Hazard - 逆Shellと本物のHazardを手前に持ってくる。10 u U' m'。3手目はHazardがあった面をU or D <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 -5-2 D&#x27; d 01</code><button type="button" class="copy" data-s="0-1 -5-2 D&#x27; d 01" aria-label="コピー">コピー</button></span></li>
+<li>Good birds - 常に上のBirdを左に置き、下のBirdからPairを持ってくる。このとき上のBirdはスライス線の隣に置く。孤立コーナーと合わさるならGood、上のPairと合わさるならBad。Good: 上のBirdのPairをスライス線の向こうへ移し、続けて同じ方向に小さいムーブ <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; u U2D 01</code><button type="button" class="copy" data-s="10 D&#x27; u U2D 01" aria-label="コピー">コピー</button></span></li>
+<li>bad birds: 同じく上のPairをスライス線の向こうへ移し、その後M。4手目はd <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; U&#x27; u2 f -10</code><button type="button" class="copy" data-s="10 D&#x27; U&#x27; u2 f -10" aria-label="コピー">コピー</button></span></li>
+<li>Bird/Hazard - Birdを左に置き、逆HazardをBirdのエッジと組み合わせ、Hazardをスライス線の向こうへ移す。3手目はBirdの面を4回すF <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; F D -10</code><button type="button" class="copy" data-s="10 F&#x27; F D -10" aria-label="コピー">コピー</button></span></li>
+<li>Hazard/yoshi - HazardのコーナーをYoshiのコーナー・エッジペアと組み合わせ、任意のtまたはTムーブを行う。3手目はu <span class="scr"><span class="scr-label">スクランブル</span><code>10 25 d&#x27; D -10</code><button type="button" class="copy" data-s="10 25 d&#x27; D -10" aria-label="コピー">コピー</button></span></li>
+<li>Kite/T - Tと同じ色のKiteを左に置き、Tのエッジを右のKiteのエッジの真上／真下に置く。Kiteからエッジを1つ切り離し、3ムーブでKiteの残りをそのエッジの方へ寄せ、続けて同じ方向に小さいムーブ <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 F U&#x27; U&#x27;D2 -10</code><button type="button" class="copy" data-s="0-1 F U&#x27; U&#x27;D2 -10" aria-label="コピー">コピー</button></span></li>
+<li>Bad Kite/N: 常にKiteを保つ（上下に持つ。どこで持つかは問わない）。Kiteが揃っていればe、ずれていればe'。<em>その後は必ず上段でFを行う</em> <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f f&#x27; e 01</code><button type="button" class="copy" data-s="0-1 f f&#x27; e 01" aria-label="コピー">コピー</button></span></li>
+<li>Kite/Tie: Tieの結び目と同じ色のKiteのPairで、外側のエッジがあるものを右に置き、Gemを左で保つ。スライスし、Gemを保つ小さいムーブを行い、その後交互ムーブ（alternating move）を行う <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 F D D&#x27; -10</code><button type="button" class="copy" data-s="0-1 F D D&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Cut/T - Tの色のCutを左に置き、Treeのエッジを Cutのエッジの真下／真上に置く（T/Kiteと同様）。Cutのピースをできるだけ多く保ち、Cutの段でF、続けてCutの段で同じ方向にU <span class="scr"><span class="scr-label">スクランブル</span><code>10 f&#x27; D -2-5 -10</code><button type="button" class="copy" data-s="10 f&#x27; D -2-5 -10" aria-label="コピー">コピー</button></span></li>
+<li>Good Cut/N - どちらかのKiteを左に持ち、NのPairを持ってきてCutの隣接エッジと入れ替える。必ずCutのエッジ2つとも取ること。Nがスライス線に接していなければGood。Good: Nの段でFを行い、その後大きいEまたはE' <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; E f -10</code><button type="button" class="copy" data-s="10 F&#x27; E f -10" aria-label="コピー">コピー</button></span></li>
+<li>bad: 同じ手順だが、まず小さいeを行い、上／下に持ってきたNがスライス線をまたぐようにする（追跡する）。その後は同じ手順（Nの段でF、E*） <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; u&#x27; U&#x27; 2-4 01</code><button type="button" class="copy" data-s="10 F&#x27; u&#x27; U&#x27; 2-4 01" aria-label="コピー">コピー</button></span></li>
+<li>Cut/tie - Tieの結び目の2/3を、Cutの孤立コーナー＋エッジと組み合わせる。Tieと同じ色のCutを段の上側に置き、Tieの結び目を追跡し、最初のスライス後にそれがある段でFを行う。3手目はTieの結び目のコーナーが元々あった位置に戻すイメージ <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f U 25 01</code><button type="button" class="copy" data-s="0-1 f U 25 01" aria-label="コピー">コピー</button></span></li>
 </ul>
 <h2 id="s5">5スライス</h2>
 <ul>
 <li><strong>Corners（手順）</strong></li>
 <li>1c/1c - 両方右上に。0-1 U F2 U' 01<ul>
-<li>または右上／左下で 10 u B u' -10</li>
+<li>または右上／左下で 10 u B u' -10 <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U F2 U&#x27; 01</code><button type="button" class="copy" data-s="0-1 U F2 U&#x27; 01" aria-label="コピー">コピー</button></span></li>
 </ul>
 </li>
-<li>3c/3c - 上は右下、下は左下に。10 F' f D' F' 01</li>
-<li>copp/cadj - Cadjを手前に、coppのブロックを保つ。10 w u D 01</li>
-<li>cadj/copp - 10 u d' u U 01</li>
-<li>Squid/squid - 上の頭を右上、下の頭を左手前に。最初のスライス後にuを行う（この手順はそのまま覚える）10 u D d' F' 01</li>
-<li>Hazards: 上の逆Hazardを左、下の逆Hazardを手前に。最初のスライス後にu（この手順はそのまま覚える）10 u u2' u f -10</li>
-<li>Bad thumbs LR と RL - 立てて持ち（エッジを下）、上段をずらし、コーナーM2。その後、上のThumbとは逆方向に小さいムーブを2回</li>
-<li>Bad kites - 下のKiteを左に持ち、上のKiteのコーナーを下へ持ってきてGem/Gemにする</li>
-<li>N/T - Tの軸（Stem）を手前に持ち、奥でJJ headlightsを行う。Nを保ち、Nと同じ揃え方にする（Nが上段ならU色のNブロックをFRに、下段ならFLに）</li>
-<li>N/Tie - Nを保ち、Tieのコーナーを手前に持って /スライス/ し、JJを行う</li>
-<li>Yoshi/Yoshis: まず下のYoshiを、ECEブロックとその隣のCEペアが手前で保たれるように揃える。次に上のYoshiを、そのECEブロックが下のECEブロックと似た位置に来るように動かす。スライスし、左方向の小さいムーブ（u' または d）で3スライスのケースへ</li>
-<li>RR と LL Axe - ブロックを保ち、Gem/Gemを先読みする</li>
-<li>RL と LR Axe - 立てて持ち、右のAxeの段でFを行う</li>
-<li>Bad bunnies - Bunnyを立てて持ち、1回スライスしてCut/Tieにし、その後任意のTムーブ</li>
+<li>3c/3c - 上は右下、下は左下に。10 F' f D' F' 01 <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; f D&#x27; F&#x27; 01</code><button type="button" class="copy" data-s="10 F&#x27; f D&#x27; F&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>copp/cadj - Cadjを手前に、coppのブロックを保つ。10 w u D 01 <span class="scr"><span class="scr-label">スクランブル</span><code>10 D&#x27; f&#x27; W&#x27; 01</code><button type="button" class="copy" data-s="10 D&#x27; f&#x27; W&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>cadj/copp - 10 u d' u U 01 <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 U&#x27; u&#x27; d u&#x27; -10</code><button type="button" class="copy" data-s="0-1 U&#x27; u&#x27; d u&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Squid/squid - 上の頭を右上、下の頭を左手前に。最初のスライス後にuを行う（この手順はそのまま覚える）10 u D d' F' 01 <span class="scr"><span class="scr-label">スクランブル</span><code>10 25 u&#x27; D d 01</code><button type="button" class="copy" data-s="10 25 u&#x27; D d 01" aria-label="コピー">コピー</button></span></li>
+<li>Hazards: 上の逆Hazardを左、下の逆Hazardを手前に。最初のスライス後にu（この手順はそのまま覚える）10 u u2' u f -10 <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; d&#x27; d2 d&#x27; -10</code><button type="button" class="copy" data-s="10 F&#x27; d&#x27; d2 d&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Bad thumbs LR と RL - 立てて持ち（エッジを下）、上段をずらし、コーナーM2。その後、上のThumbとは逆方向に小さいムーブを2回 <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 M f&#x27; W&#x27; 01</code><button type="button" class="copy" data-s="0-1 M f&#x27; W&#x27; 01" aria-label="コピー">コピー</button></span></li>
+<li>Bad kites - 下のKiteを左に持ち、上のKiteのコーナーを下へ持ってきてGem/Gemにする <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 D&#x27; d&#x27; f&#x27; U 01</code><button type="button" class="copy" data-s="0-1 D&#x27; d&#x27; f&#x27; U 01" aria-label="コピー">コピー</button></span></li>
+<li>N/T - Tの軸（Stem）を手前に持ち、奥でJJ headlightsを行う。Nを保ち、Nと同じ揃え方にする（Nが上段ならU色のNブロックをFRに、下段ならFLに） <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 -5-2 F&#x27; D&#x27; f -10</code><button type="button" class="copy" data-s="0-1 -5-2 F&#x27; D&#x27; f -10" aria-label="コピー">コピー</button></span></li>
+<li>N/Tie - Nを保ち、Tieのコーナーを手前に持って /スライス/ し、JJを行う <span class="scr"><span class="scr-label">スクランブル</span><code>10 F&#x27; U UD2 u&#x27; -10</code><button type="button" class="copy" data-s="10 F&#x27; U UD2 u&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Yoshi/Yoshis: まず下のYoshiを、ECEブロックとその隣のCEペアが手前で保たれるように揃える。次に上のYoshiを、そのECEブロックが下のECEブロックと似た位置に来るように動かす。スライスし、左方向の小さいムーブ（u' または d）で3スライスのケースへ <span class="scr"><span class="scr-label">スクランブル</span><code>10 52 F D&#x27; U2D -10</code><button type="button" class="copy" data-s="10 52 F D&#x27; U2D -10" aria-label="コピー">コピー</button></span></li>
+<li>RR と LL Axe - ブロックを保ち、Gem/Gemを先読みする <span class="scr"><span class="scr-label">スクランブル</span><code>10 U u F U&#x27; -10</code><button type="button" class="copy" data-s="10 U u F U&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>RL と LR Axe - 立てて持ち、右のAxeの段でFを行う <span class="scr"><span class="scr-label">スクランブル</span><code>10 f2&#x27; D D -10</code><button type="button" class="copy" data-s="10 f2&#x27; D D -10" aria-label="コピー">コピー</button></span></li>
+<li>Bad bunnies - Bunnyを立てて持ち、1回スライスしてCut/Tieにし、その後任意のTムーブ <span class="scr"><span class="scr-label">スクランブル</span><code>0-1 f d T&#x27; f&#x27; 01</code><button type="button" class="copy" data-s="0-1 f d T&#x27; f&#x27; 01" aria-label="コピー">コピー</button></span></li>
 </ul>
 <h2 id="s6">6スライス</h2>
 <ul>
-<li>Bad Kite/cut - 1回スライスでCOし、5スライスの1/1へ - 先読みする（10\U' w U -10, 10 u W' u' -10）か、とにかく1回スライスして適当な5スライスのケースにすればOK（笑）</li>
-<li>Bad cuts - 下にスライスしてSquid/squidや3c、あるいは文字通りどの5スライスのケースでもよい。どれでも構わない（笑）</li>
+<li>Bad Kite/cut - 1回スライスでCOし、5スライスの1/1へ - 先読みする（10\U' w U -10, 10 u W' u' -10）か、とにかく1回スライスして適当な5スライスのケースにすればOK（笑） <span class="scr"><span class="scr-label">スクランブル</span><code>10 U&#x27; w U U2D&#x27; -10</code><button type="button" class="copy" data-s="10 U&#x27; w U U2D&#x27; -10" aria-label="コピー">コピー</button></span></li>
+<li>Bad cuts - 下にスライスしてSquid/squidや3c、あるいは文字通りどの5スライスのケースでもよい。どれでも構わない（笑） <span class="scr"><span class="scr-label">スクランブル</span><code>10 f&#x27; D F3 -10</code><button type="button" class="copy" data-s="10 f&#x27; D F3 -10" aria-label="コピー">コピー</button></span></li>
 </ul>
 </main>
+<script>
+document.addEventListener("click", function (e) {
+  var b = e.target.closest(".copy"); if (!b) return;
+  navigator.clipboard.writeText(b.dataset.s).then(function () {
+    b.textContent = "コピー済み"; b.classList.add("done");
+    setTimeout(function () { b.textContent = "コピー"; b.classList.remove("done"); }, 1500);
+  });
+});
+</script>
 </body>
 </html>
